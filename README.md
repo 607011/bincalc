@@ -2,6 +2,7 @@
 
 Simple calculator for binary numbers
 
+![](https://img.shields.io/github/license/ola-ct/bincalc.svg)
 
 ---
 
