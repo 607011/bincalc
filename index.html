@@ -3,6 +3,23 @@
 <head>
   <title>Binary Calculator</title>
 </head>
+<!--
+    Simple calculator for binary numbers.
+    Copyright (C) 2019 Oliver Lau <ola@ct.de>, Heise Medien GmbH & Co. KG
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
 <style type="text/css">
   * {
     margin: 0;
@@ -32,15 +49,16 @@
     width: 100%;
     height: 50pt;
   }
-
 </style>
 <script type="text/javascript">
   (function (window) {
     'use strict';
     let inEl = null;
     let outEl = null;
+    let msgEl = null;
     let values = [];
     let ops = [];
+    const base = 2;
     const Padding = '00000000000000000000000000000000';
 
     class Token {
@@ -72,8 +90,8 @@
           if (m && m.length > 0) {
             if (!t.ignore) {
               let value = (t.type === Token.Type.Literal)
-              ? parseInt(m[0], 2)
-              : m[0];
+                ? parseInt(m[0], base)
+                : m[0];
               tokens.push(new Token(t.type, value));
             }
             expr = expr.substring(m[0].length);
@@ -90,11 +108,9 @@
     let formulaChanged = event => {
       let tokens = tokenize(inEl.value);
       if (tokens) {
-        console.log(tokens);
         let ops = [];
         let values = [];
         for (const token of tokens) {
-          console.log(token);
           switch (token.type) {
             case Token.Type.Literal:
               values.push(token.value);
@@ -128,13 +144,18 @@
               r = a - b;
               break;
           }
-          console.log(r.toString());
           if (r) {
             values.push(r);
           }
         }
         if (r) {
-          outEl.value = values.pop().toString(2);
+          outEl.value = values.pop().toString(base);
+          if (values.length === 0 && ops.length === 0) {
+            msgEl.innerText = '';
+          }
+          else {
+            msgEl.innerText = 'invalid expression';
+          }
         }
       }
     };
@@ -142,6 +163,7 @@
       inEl = document.getElementById('input');
       inEl.addEventListener('input', formulaChanged);
       outEl = document.getElementById('output');
+      msgEl = document.getElementById('msg');
     }
     window.addEventListener('load', main);
   })(window);
@@ -153,6 +175,7 @@
     <div class="container"><textarea id="input"
         placeholder="type formula here, e.g. '1001 ^ 1111' to XOR two values"></textarea></div>
     <div class="container"><textarea id="output" readonly placeholder="result will be displayed here"></textarea></div>
+    <div class="container"><span id="msg"></span></div>
   </div>
 </body>
 
