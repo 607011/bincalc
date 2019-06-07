@@ -125,8 +125,8 @@
         let r = undefined;
         while (ops.length > 0) {
           let op = ops.shift();
-          let b = values.shift();
           let a = values.shift();
+          let b = values.shift();
           switch (op) {
             case '^':
               r = a ^ b;
