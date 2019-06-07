@@ -28,8 +28,13 @@
 
   html,
   body {
-    background-color: #e9e5ce;
+    background-color: #e9e7de;
     font-family: 'Courier New', Courier, monospace;
+    font-size: 12pt;
+  }
+
+  h1 {
+    font-size: 18pt;
   }
 
   .app {
@@ -56,10 +61,17 @@
     let inEl = null;
     let outEl = null;
     let msgEl = null;
+    let baseFormEl = null;
     let values = [];
     let ops = [];
-    const base = 2;
-    const Padding = '00000000000000000000000000000000';
+    let base = 2;
+    const Padding = (function (length) {
+      let padding = '';
+      for (let i = 0; i < length; ++i) {
+        padding += '0';
+      }
+      return padding;
+    })(512);
 
     class Token {
       constructor(type, value) {
@@ -74,9 +86,12 @@
     };
 
     Token.Types = [
-      { regex: /^[01]+/, type: Token.Type.Literal, ignore: false },
-      { regex: /^[\^\&\|\+-]/, type: Token.Type.Operator, ignore: false },
       { regex: /^\s+/, type: Token.Type.Space, ignore: true },
+      { regex: /^[\^\&\|\+-]/, type: Token.Type.Operator, ignore: false },
+      { base: +2, regex: /^[01]+/, type: Token.Type.Literal, ignore: false },
+      { base: +8, regex: /^[0-7]+/, type: Token.Type.Literal, ignore: false },
+      { base: +10, regex: /^[0-9]+/, type: Token.Type.Literal, ignore: false },
+      { base: +16, regex: /^[0-9a-fA-F]+/, type: Token.Type.Literal, ignore: false },
     ];
 
     let tokenize = str => {
@@ -86,12 +101,22 @@
         let found = false;
         for (let i = 0; i < Token.Types.length && !found; ++i) {
           let t = Token.Types[i];
+          if (Number.isInteger(t.base) && t.base !== base) {
+            continue;
+          }
           let m = expr.match(t.regex);
           if (m && m.length > 0) {
             if (!t.ignore) {
-              let value = (t.type === Token.Type.Literal)
-                ? parseInt(m[0], base)
-                : m[0];
+              let value;
+              if (t.type === Token.Type.Literal) {
+                value = parseInt(m[0], base);
+                if (isNaN(value)) {
+                  return {error: 'invalid literal: ${m[0]}'};
+                }
+              }
+              else {
+                value = m[0];
+              }
               tokens.push(new Token(t.type, value));
             }
             expr = expr.substring(m[0].length);
@@ -99,14 +124,25 @@
           }
         }
         if (!found) {
-          return;
+          return {error: `invalid expression`};
         }
       }
-      return tokens;
+      return {
+        tokens: tokens
+      };
     }
 
     let formulaChanged = event => {
-      let tokens = tokenize(inEl.value);
+      let result = tokenize(inEl.value);
+      if (result.error) {
+        msgEl.innerText = result.error;
+        return;
+      }
+      else {
+        msgEl.innerText = '';
+      }
+      let tokens = result.tokens;
+      console.log('tokens before', tokens);
       if (tokens) {
         let ops = [];
         let values = [];
@@ -122,8 +158,10 @@
               break;
           }
         }
+        console.log("BEFORE ** ops:", ops, "values:", values);
         let r = undefined;
         while (ops.length > 0) {
+          console.log("values", values);
           let op = ops.shift();
           let a = values.shift();
           let b = values.shift();
@@ -144,26 +182,31 @@
               r = a - b;
               break;
           }
-          if (r) {
-            values.push(r);
+          if (Number.isInteger(r)) {
+            values.unshift(r);
           }
         }
-        if (r) {
+        if (values.length === 1) {
           outEl.value = values.pop().toString(base);
-          if (values.length === 0 && ops.length === 0) {
-            msgEl.innerText = '';
-          }
-          else {
-            msgEl.innerText = 'invalid expression';
-          }
         }
+        else {
+          msgEl.innerText = 'invalid expression';
+        }
+        console.log("AFTER ** ops:", ops, "values:", values);
       }
+    };
+    let baseChanged = event => {
+      base = parseInt(event.target.value);
+      formulaChanged();
     };
     let main = () => {
       inEl = document.getElementById('input');
       inEl.addEventListener('input', formulaChanged);
       outEl = document.getElementById('output');
       msgEl = document.getElementById('msg');
+      baseFormEl = document.getElementById('base-form');
+      baseFormEl.addEventListener('change', baseChanged);
+      document.getElementById(`base-${base}`).checked = true;
     }
     window.addEventListener('load', main);
   })(window);
@@ -172,6 +215,18 @@
 <body>
   <div class="app">
     <h1>Binary Calculator</h1>
+    <div class="container">
+      <form id="base-form">
+        <input id="base-2" name="base" type="radio" value="2"></option>
+        <label for="base-2">binary</label>
+        <input id="base-8" name="base" type="radio" value="8"></option>
+        <label for="base-8">octal</label>
+        <input id="base-10" name="base" type="radio" value="10"></option>
+        <label for="base-10">decimal</label>
+        <input id="base-16" name="base" type="radio" value="16"></option>
+        <label for="base-16">hexadecimal</label>
+      </form>
+    </div>
     <div class="container"><textarea id="input"
         placeholder="type formula here, e.g. '1001 ^ 1111' to XOR two values"></textarea></div>
     <div class="container"><textarea id="output" readonly placeholder="result will be displayed here"></textarea></div>
