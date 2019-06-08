@@ -64,7 +64,7 @@
     let baseFormEl = null;
     let values = [];
     let ops = [];
-    let base = 2;
+    let base = localStorage.getItem('base') || 2;
     const Padding = (function (length) {
       let padding = '';
       for (let i = 0; i < length; ++i) {
@@ -197,6 +197,7 @@
     };
     let baseChanged = event => {
       base = parseInt(event.target.value);
+      localStorage.setItem('base', base);
       formulaChanged();
     };
     let main = () => {
