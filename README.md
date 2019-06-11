@@ -1,6 +1,6 @@
 # bincalc
 
-_Simple calculator for binary numbers_
+_Arbitrary precision arithmetics_
 
 ![](https://img.shields.io/github/license/ola-ct/bincalc.svg)
 
