@@ -122,15 +122,14 @@
     };
 
     Token.Types = [
-      { regex: /^(\s+)/, type: Token.Type.Space, ignore: true, name: 'whitespace' },
-      { regex: /^(&=|\^=|\/=|\^|\&|\||\+|\-|\*\*|\*|\/|%|<<|>>|<=|>=|<|>|=)/, type: Token.Type.Operator, ignore: false, name: 'operator' },
-      { regex: /^(\()/, type: Token.Type.LeftParenthesis, ignore: false, name: 'left parenthesis' },
-      { regex: /^(\))/, type: Token.Type.RightParenthesis, ignore: false, name: 'right parenthesis' },
-      { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, ignore: false, name: 'binary' },
-      { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, ignore: false, name: 'octal' },
-      { regex: /^([0-9]+)/, type: Token.Type.Literal, base: 10, ignore: false, name: 'decimal' },
-      { regex: /^x([0-9a-fA-F]+)/, type: Token.Type.Literal, base: 16, ignore: false, name: 'hexadecimal' },
-      { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, ignore: false, name: 'variable' },
+      { regex: /^(&=|\^=|\/=|\^|\&|\||\+|\-|\*\*|\*|\/|%|<<|>>|<=|>=|<|>|=)/, type: Token.Type.Operator, name: 'operator' },
+      { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
+      { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
+      { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, name: 'binary' },
+      { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, name: 'octal' },
+      { regex: /^([0-9]+)/, type: Token.Type.Literal, base: 10, name: 'decimal' },
+      { regex: /^x([0-9a-fA-F]+)/, type: Token.Type.Literal, base: 16, name: 'hexadecimal' },
+      { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, name: 'variable' },
     ];
 
     const LEFT = -1;
@@ -209,8 +208,8 @@
     };
 
     let tokenize = str => {
+      let expr = str.replace(/\s+/g, '');
       let tokens = [];
-      let expr = str;
       while (expr.length > 0) {
         let found = false;
         for (let i = 0; i < Token.Types.length && !found; ++i) {
@@ -219,23 +218,21 @@
           if (m && m.length > 0) {
             let symbol = m[1];
             let len = m[0].length;
-            if (!t.ignore) {
-              let value;
-              switch (t.type) {
-                case Token.Type.Literal:
-                  try {
-                    value = BigInt(Token.BasePrefix[t.base] + symbol);
-                  }
-                  catch (e) {
-                    console.error(e);
-                  }
-                  break;
-                default:
-                  value = symbol;
-                  break;
-              }
-              tokens.push(new Token(t.type, value));
+            let value;
+            switch (t.type) {
+              case Token.Type.Literal:
+                try {
+                  value = BigInt(Token.BasePrefix[t.base] + symbol);
+                }
+                catch (e) {
+                  console.error(e);
+                }
+                break;
+              default:
+                value = symbol;
+                break;
             }
+            tokens.push(new Token(t.type, value));
             expr = expr.substring(len);
             found = true;
           }
@@ -247,6 +244,51 @@
       return {tokens: tokens};
     }
 
+    let shuntingYard = tokens => {
+      let ops = [];
+      let queue = [];
+      for (const token of tokens) {
+        switch (token.type) {
+          case Token.Type.Literal:
+          // fall-through
+          case Token.Type.Variable:
+            queue.push(token);
+            break;
+          case Token.Type.Operator:
+            while (ops.peek() &&
+              (ops.peek().type !== Token.Type.LeftParenthesis)
+              &&
+              (
+                (ops.peek().precedence > token.precedence)
+                ||
+                (ops.peek().precedence === token.precedence && ops.peek().associativity === LEFT)
+              )
+            ) {
+              queue.push(ops.pop());
+            }
+            ops.push(token);
+            break;
+          case Token.Type.LeftParenthesis:
+            ops.push(token);
+            break;
+          case Token.Type.RightParenthesis:
+            while (ops.peek() && ops.peek().type !== Token.Type.LeftParenthesis) {
+              queue.push(ops.pop());
+            }
+            if (ops.peek().type === Token.Type.LeftParenthesis) {
+              ops.pop();
+            }
+            break;
+          default:
+            break;
+        }
+      }
+      while (ops.length > 0) {
+        queue.push(ops.pop());
+      }
+      return queue;
+    }
+
     let formulaChanged = event => {
       let result = tokenize(inEl.value);
       if (result.error) {
@@ -256,92 +298,52 @@
       else {
         msgEl.innerText = '';
       }
-      let tokens = result.tokens;
-
-      console.log(tokens);
-
-      if (tokens) {
-        // Shunting-yard algorithm, https://en.wikipedia.org/wiki/Shunting-yard_algorithm
-        let ops = [];
-        let queue = [];
-
-        for (const token of tokens) {
-          switch (token.type) {
-            case Token.Type.Literal:
-              // fall-through
-            case Token.Type.Variable:
-              queue.push(token);
-              break;
-            case Token.Type.Operator:
-              while (ops.peek() &&
-                (ops.peek().type !== Token.Type.LeftParenthesis)
-                &&
-                (
-                  (ops.peek().precedence > token.precedence)
-                  ||
-                  (ops.peek().precedence === token.precedence && ops.peek().associativity === LEFT)
-                )
-              ) {
-                queue.push(ops.pop());
-              }
-              ops.push(token);
-              break;
-            case Token.Type.LeftParenthesis:
-              ops.push(token);
-              break;
-            case Token.Type.RightParenthesis:
-              while (ops.peek() && ops.peek().type !== Token.Type.LeftParenthesis) {
-                queue.push(ops.pop());
-              }
-              if (ops.peek().type === Token.Type.LeftParenthesis) {
-                ops.pop();
-              }
-              break;
-            default:
-              break;
+      if (result.tokens) {
+        let tokens = shuntingYard(result.tokens);
+        let s = [];
+        for (const t of tokens) {
+          if (t.type === Token.Type.Literal) {
+            s.push(t);
           }
-        }
-        while (ops.length > 0) {
-          queue.push(ops.pop());
-        }
-
-        let r = undefined;
-        while (queue.length > 0) {
-          let a = queue.shift().value;
-          let b = queue.shift().value;
-          let op = queue.shift().value;
-          if (op && a && b) {
-            switch (op) {
-              case '**':
-                r = Math.pow(a, b);
-                break;
-              case '^':
-                r = a ^ b;
-                break;
-              case '|':
-                r = a | b;
-                break;
-              case '&':
-                r = a & b;
-                break;
-              case '+':
-                r = a + b;
-                break;
-              case '-':
-                r = a - b;
-                break;
-              case '*':
-                r = a * b;
-                break;
-              case '/':
-                r = a / b;
-                break;
+          else if (t.type === Token.Type.Variable) {
+            s.push(t); // XXX
+          }
+          else {
+            let o2 = s.pop();
+            let o1 = s.pop();
+            console.log(o2, o1);
+            try {
+              switch (t.value) {
+                case '+':
+                  s.push(new Token(Token.Type.Literal, o1.value + o2.value));
+                  break;
+                case '-':
+                  s.push(new Token(Token.Type.Literal, o1.value - o2.value));
+                  break;
+                case '*':
+                  s.push(new Token(Token.Type.Literal, o1.value * o2.value));
+                  break;
+                case '/':
+                  s.push(new Token(Token.Type.Literal, o1.value / o2.value));
+                  break;
+                case '^':
+                  s.push(new Token(Token.Type.Literal, o1.value ^ o2.value));
+                  break;
+                case '|':
+                  s.push(new Token(Token.Type.Literal, o1.value | o2.value));
+                  break;
+                case '&':
+                  s.push(new Token(Token.Type.Literal, o1.value & o2.value));
+                  break;
+              }
             }
-            queue.unshift(r);
+            catch (e) {
+              console.error(e);
+            }
           }
         }
-        if (r) {
-          outEl.value = r.toString(base);
+        if (s.length === 1) {
+          outEl.value = s[0].value.toString(base);
         }
         else {
           outEl.value = '';
