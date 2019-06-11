@@ -311,42 +311,45 @@
           else {
             let o2 = s.pop();
             let o1 = s.pop();
-            console.log(o2, o1);
-            try {
-              switch (t.value) {
-                case '+':
-                  s.push(new Token(Token.Type.Literal, o1.value + o2.value));
-                  break;
-                case '-':
-                  s.push(new Token(Token.Type.Literal, o1.value - o2.value));
-                  break;
-                case '*':
-                  s.push(new Token(Token.Type.Literal, o1.value * o2.value));
-                  break;
-                case '/':
-                  s.push(new Token(Token.Type.Literal, o1.value / o2.value));
-                  break;
-                case '^':
-                  s.push(new Token(Token.Type.Literal, o1.value ^ o2.value));
-                  break;
-                case '|':
-                  s.push(new Token(Token.Type.Literal, o1.value | o2.value));
-                  break;
-                case '&':
-                  s.push(new Token(Token.Type.Literal, o1.value & o2.value));
-                  break;
+            if (o1 instanceof Token && o2 instanceof Token) {
+              try {
+                switch (t.value) {
+                  case '+':
+                    s.push(new Token(Token.Type.Literal, o1.value + o2.value));
+                    break;
+                  case '-':
+                    s.push(new Token(Token.Type.Literal, o1.value - o2.value));
+                    break;
+                  case '*':
+                    s.push(new Token(Token.Type.Literal, o1.value * o2.value));
+                    break;
+                  case '/':
+                    s.push(new Token(Token.Type.Literal, o1.value / o2.value));
+                    break;
+                  case '^':
+                    s.push(new Token(Token.Type.Literal, o1.value ^ o2.value));
+                    break;
+                  case '|':
+                    s.push(new Token(Token.Type.Literal, o1.value | o2.value));
+                    break;
+                  case '&':
+                    s.push(new Token(Token.Type.Literal, o1.value & o2.value));
+                    break;
+                }
               }
-            }
-            catch (e) {
-              console.error(e);
+              catch (e) {
+                console.error(e);
+              }
             }
           }
         }
         if (s.length === 1) {
           outEl.value = s[0].value.toString(base);
+          msgEl.value = '';
         }
         else {
           outEl.value = '';
+          msgEl.value = 'invalid expression';
         }
       }
     };
