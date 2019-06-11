@@ -73,26 +73,140 @@
       return padding;
     })(512);
 
+    Array.prototype.peek = function() { return this[this.length-1]; };
+
     class Token {
       constructor(type, value) {
-        this.type = type;
-        this.value = value;
+        this._type = type;
+        this._value = value;
+      }
+
+      get type() {
+        return this._type;
+      }
+
+      get value() {
+        return this._value;
+      }
+
+      set type(t) {
+        this._type = t;
+      }
+
+      set value(v) {
+        this._value = v;
+      }
+
+      get precedence() {
+        return Token.Operator[this.value].prec;
+      }
+
+      get associativity() {
+        return Token.Operator[this.value].assoc;
       }
     }
 
-    Token.Type = {
-      Literal: 1,
-      Operator: 2
+    Token.Type = (function(types) {
+      let obj = {};
+      for (let i in types) {
+        obj[types[i]] = +i+1;
+      }
+      return obj;
+    })(['Literal', 'Operator', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
+
+    Token.BasePrefix = {
+      2: '0b',
+      8: '0o',
+      10: '',
+      16: '0x',
     };
 
     Token.Types = [
-      { regex: /^\s+/, type: Token.Type.Space, ignore: true },
-      { regex: /^[\^\&\|\+-]/, type: Token.Type.Operator, ignore: false },
-      { base: +2, regex: /^[01]+/, type: Token.Type.Literal, ignore: false },
-      { base: +8, regex: /^[0-7]+/, type: Token.Type.Literal, ignore: false },
-      { base: +10, regex: /^[0-9]+/, type: Token.Type.Literal, ignore: false },
-      { base: +16, regex: /^[0-9a-fA-F]+/, type: Token.Type.Literal, ignore: false },
+      { regex: /^(\s+)/, type: Token.Type.Space, ignore: true, name: 'whitespace' },
+      { regex: /^(&=|\^=|\/=|\^|\&|\||\+|\-|\*\*|\*|\/|%|<<|>>|<=|>=|<|>|=)/, type: Token.Type.Operator, ignore: false, name: 'operator' },
+      { regex: /^(\()/, type: Token.Type.LeftParenthesis, ignore: false, name: 'left parenthesis' },
+      { regex: /^(\))/, type: Token.Type.RightParenthesis, ignore: false, name: 'right parenthesis' },
+      { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, ignore: false, name: 'binary' },
+      { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, ignore: false, name: 'octal' },
+      { regex: /^([0-9]+)/, type: Token.Type.Literal, base: 10, ignore: false, name: 'decimal' },
+      { regex: /^x([0-9a-fA-F]+)/, type: Token.Type.Literal, base: 16, ignore: false, name: 'hexadecimal' },
+      { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, ignore: false, name: 'variable' },
     ];
+
+    const LEFT = -1;
+    const RIGHT = 1;
+
+    // see https://en.cppreference.com/w/cpp/language/operator_precedence
+    Token.Operator = {
+      '-': {
+        prec: -3,
+        assoc: RIGHT,
+      },
+      '~': {
+        prec: -3,
+        assoc: RIGHT,
+      },
+      '*': {
+        prec: -5,
+        assoc: LEFT,
+      },
+      '/': {
+        prec: -5,
+        assoc: LEFT,
+      },
+      '%': {
+        prec: -5,
+        assoc: LEFT,
+      },
+      '+': {
+        prec: -6,
+        assoc: LEFT,
+      },
+      '-': {
+        prec: -6,
+        assoc: LEFT,
+      },
+      '<<': {
+        prec: -7,
+        assoc: LEFT,
+      },
+      '>>': {
+        prec: -7,
+        assoc: LEFT,
+      },
+      '<': {
+        prec: -9,
+        assoc: LEFT,
+      },
+      '>': {
+        prec: -9,
+        assoc: LEFT,
+      },
+      '<=': {
+        prec: -9,
+        assoc: LEFT,
+      },
+      '>=': {
+        prec: -9,
+        assoc: LEFT,
+      },
+      '&': {
+        prec: -11,
+        assoc: LEFT,
+      },
+      '^': {
+        prec: -12,
+        assoc: LEFT,
+      },
+      '|': {
+        prec: -13,
+        assoc: LEFT,
+      },
+      '=': {
+        prec: -16,
+        assoc: RIGHT,
+      }
+    };
 
     let tokenize = str => {
       let tokens = [];
@@ -101,35 +215,36 @@
         let found = false;
         for (let i = 0; i < Token.Types.length && !found; ++i) {
           let t = Token.Types[i];
-          if (Number.isInteger(t.base) && t.base !== base) {
-            continue;
-          }
           let m = expr.match(t.regex);
           if (m && m.length > 0) {
+            let symbol = m[1];
+            let len = m[0].length;
             if (!t.ignore) {
               let value;
-              if (t.type === Token.Type.Literal) {
-                value = parseInt(m[0], base);
-                if (isNaN(value)) {
-                  return {error: 'invalid literal: ${m[0]}'};
-                }
-              }
-              else {
-                value = m[0];
+              switch (t.type) {
+                case Token.Type.Literal:
+                  try {
+                    value = BigInt(Token.BasePrefix[t.base] + symbol);
+                  }
+                  catch (e) {
+                    console.error(e);
+                  }
+                  break;
+                default:
+                  value = symbol;
+                  break;
               }
               tokens.push(new Token(t.type, value));
             }
-            expr = expr.substring(m[0].length);
+            expr = expr.substring(len);
             found = true;
           }
         }
         if (!found) {
-          return {error: `invalid expression`};
+          return {error: `invalid expression: ${str}`};
         }
       }
-      return {
-        tokens: tokens
-      };
+      return {tokens: tokens};
     }
 
     let formulaChanged = event => {
@@ -142,63 +257,103 @@
         msgEl.innerText = '';
       }
       let tokens = result.tokens;
-      console.log('tokens before', tokens);
+
+      console.log(tokens);
+
       if (tokens) {
+        // Shunting-yard algorithm, https://en.wikipedia.org/wiki/Shunting-yard_algorithm
         let ops = [];
-        let values = [];
+        let queue = [];
+
         for (const token of tokens) {
           switch (token.type) {
             case Token.Type.Literal:
-              values.push(token.value);
+              // fall-through
+            case Token.Type.Variable:
+              queue.push(token);
               break;
             case Token.Type.Operator:
-              ops.push(token.value);
+              while (ops.peek() &&
+                (ops.peek().type !== Token.Type.LeftParenthesis)
+                &&
+                (
+                  (ops.peek().precedence > token.precedence)
+                  ||
+                  (ops.peek().precedence === token.precedence && ops.peek().associativity === LEFT)
+                )
+              ) {
+                queue.push(ops.pop());
+              }
+              ops.push(token);
+              break;
+            case Token.Type.LeftParenthesis:
+              ops.push(token);
+              break;
+            case Token.Type.RightParenthesis:
+              while (ops.peek() && ops.peek().type !== Token.Type.LeftParenthesis) {
+                queue.push(ops.pop());
+              }
+              if (ops.peek().type === Token.Type.LeftParenthesis) {
+                ops.pop();
+              }
               break;
             default:
               break;
           }
         }
-        console.log("BEFORE ** ops:", ops, "values:", values);
-        let r = undefined;
         while (ops.length > 0) {
-          console.log("values", values);
-          let op = ops.shift();
-          let a = values.shift();
-          let b = values.shift();
-          switch (op) {
-            case '^':
-              r = a ^ b;
-              break;
-            case '|':
-              r = a | b;
-              break;
-            case '&':
-              r = a & b;
-              break;
-            case '+':
-              r = a + b;
-              break;
-            case '-':
-              r = a - b;
-              break;
-          }
-          if (Number.isInteger(r)) {
-            values.unshift(r);
+          queue.push(ops.pop());
+        }
+
+        let r = undefined;
+        while (queue.length > 0) {
+          let a = queue.shift().value;
+          let b = queue.shift().value;
+          let op = queue.shift().value;
+          if (op && a && b) {
+            switch (op) {
+              case '**':
+                r = Math.pow(a, b);
+                break;
+              case '^':
+                r = a ^ b;
+                break;
+              case '|':
+                r = a | b;
+                break;
+              case '&':
+                r = a & b;
+                break;
+              case '+':
+                r = a + b;
+                break;
+              case '-':
+                r = a - b;
+                break;
+              case '*':
+                r = a * b;
+                break;
+              case '/':
+                r = a / b;
+                break;
+            }
+            queue.unshift(r);
           }
         }
-        if (values.length === 1) {
-          outEl.value = values.pop().toString(base);
+        if (r) {
+          outEl.value = r.toString(base);
         }
         else {
-          msgEl.innerText = 'invalid expression';
+          outEl.value = '';
         }
-        console.log("AFTER ** ops:", ops, "values:", values);
       }
     };
+
     let baseChanged = event => {
       base = parseInt(event.target.value);
       formulaChanged();
     };
+
     let main = () => {
       inEl = document.getElementById('input');
       inEl.addEventListener('input', formulaChanged);
@@ -208,6 +363,7 @@
       baseFormEl.addEventListener('change', baseChanged);
       document.getElementById(`base-${base}`).checked = true;
     }
+
     window.addEventListener('load', main);
   })(window);
 </script>
@@ -215,21 +371,21 @@
 <body>
   <div class="app">
     <h1>Binary Calculator</h1>
-    <div class="container">
-      <form id="base-form">
-        <input id="base-2" name="base" type="radio" value="2"></option>
-        <label for="base-2">binary</label>
-        <input id="base-8" name="base" type="radio" value="8"></option>
-        <label for="base-8">octal</label>
-        <input id="base-10" name="base" type="radio" value="10"></option>
-        <label for="base-10">decimal</label>
-        <input id="base-16" name="base" type="radio" value="16"></option>
-        <label for="base-16">hexadecimal</label>
-      </form>
-    </div>
     <div class="container"><textarea id="input"
         placeholder="type formula here, e.g. '1001 ^ 1111' to XOR two values"></textarea></div>
-    <div class="container"><textarea id="output" readonly placeholder="result will be displayed here"></textarea></div>
+        <div class="container">
+            <form id="base-form">
+              <input id="base-2" name="base" type="radio" value="2"></option>
+              <label for="base-2">binary</label>
+              <input id="base-8" name="base" type="radio" value="8"></option>
+              <label for="base-8">octal</label>
+              <input id="base-10" name="base" type="radio" value="10"></option>
+              <label for="base-10">decimal</label>
+              <input id="base-16" name="base" type="radio" value="16"></option>
+              <label for="base-16">hexadecimal</label>
+            </form>
+          </div>
+          <div class="container"><textarea id="output" readonly placeholder="result will be displayed here"></textarea></div>
     <div class="container"><span id="msg"></span></div>
   </div>
 </body>
