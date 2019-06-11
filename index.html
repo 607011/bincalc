@@ -1,10 +1,10 @@
 <html>
 
 <head>
-  <title>Binary Calculator</title>
+  <title>Arbitrary Precision Calculator</title>
 </head>
 <!--
-    Simple calculator for binary numbers.
+    Arbitrary Precision Calculator.
     Copyright (C) 2019 Oliver Lau <ola@ct.de>, Heise Medien GmbH & Co. KG
 
     This program is free software: you can redistribute it and/or modify
@@ -41,8 +41,13 @@
     padding: 5pt;
   }
 
-  .container {
+  p {
     margin: 5pt auto;
+  }
+
+  #msg {
+    min-height: 5ex;
+    display: inline-block;
   }
 
   textarea {
@@ -73,7 +78,7 @@
       return padding;
     })(512);
 
-    Array.prototype.peek = function() { return this[this.length-1]; };
+    Array.prototype.peek = function () { return this[this.length - 1]; };
 
     class Token {
       constructor(type, value) {
@@ -106,10 +111,10 @@
       }
     }
 
-    Token.Type = (function(types) {
+    Token.Type = (function (types) {
       let obj = {};
       for (let i in types) {
-        obj[types[i]] = +i+1;
+        obj[types[i]] = +i + 1;
       }
       return obj;
     })(['Literal', 'Operator', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
@@ -238,10 +243,10 @@
           }
         }
         if (!found) {
-          return {error: `invalid expression: ${str}`};
+          return { error: `invalid expression: ${str}` };
         }
       }
-      return {tokens: tokens};
+      return { tokens: tokens };
     }
 
     let shuntingYard = tokens => {
@@ -376,23 +381,29 @@
 
 <body>
   <div class="app">
-    <h1>Binary Calculator</h1>
-    <div class="container"><textarea id="input"
-        placeholder="type formula here, e.g. '1001 ^ 1111' to XOR two values"></textarea></div>
-        <div class="container">
-            <form id="base-form">
-              <input id="base-2" name="base" type="radio" value="2"></option>
-              <label for="base-2">binary</label>
-              <input id="base-8" name="base" type="radio" value="8"></option>
-              <label for="base-8">octal</label>
-              <input id="base-10" name="base" type="radio" value="10"></option>
-              <label for="base-10">decimal</label>
-              <input id="base-16" name="base" type="radio" value="16"></option>
-              <label for="base-16">hexadecimal</label>
-            </form>
-          </div>
-          <div class="container"><textarea id="output" readonly placeholder="result will be displayed here"></textarea></div>
-    <div class="container"><span id="msg"></span></div>
+    <h1>Arbitrary Precision Calculator</h1>
+    <p><textarea id="input"
+        placeholder="type formula here, e.g. 'b1001 ^ x0f' to XOR a binary with a hexadecimal value"></textarea></p>
+    <p><textarea id="output" readonly placeholder="result will be displayed here"></textarea></p>
+    <p>
+        <form id="base-form">
+          <input id="base-2" name="base" type="radio" value="2"></option>
+          <label for="base-2">binary</label>
+          <input id="base-8" name="base" type="radio" value="8"></option>
+          <label for="base-8">octal</label>
+          <input id="base-10" name="base" type="radio" value="10"></option>
+          <label for="base-10">decimal</label>
+          <input id="base-16" name="base" type="radio" value="16"></option>
+          <label for="base-16">hexadecimal</label>
+        </form>
+      </p>
+      <p><span id="msg"></span></p>
+    <hr style="margin-top: 29pt; margin-bottom: 7pt;" />
+    <dp><span style="font-size: smaller">
+        Arbitrary Precision Calculator v0.1 &ndash;
+        Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, Heise Medien GmbH & Co. KG</span></p>
+    <p><span style="font-size: smaller"><em>(Needs Chrome 67, Firefox 68 or Opera 54 to
+          work.)</em></span></p>
   </div>
 </body>
 
