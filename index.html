@@ -276,20 +276,20 @@
     }
 
     let calculate = expr => {
-      let result = tokenize(expr);
+      const result = tokenize(expr);
       if (result.error) {
         return result;
       }
       if (result.tokens) {
         let s = new Stack();
-        let tokens = shuntingYard(result.tokens);
+        const tokens = shuntingYard(result.tokens);
         for (const t of tokens) {
           if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
             s.push(t);
           }
           else {
-            let bToken = s.pop();
-            let aToken = s.pop();
+            const bToken = s.pop();
+            const aToken = s.pop();
             if (aToken instanceof Token && bToken instanceof Token) {
               let a = (aToken.type === Token.Type.Literal)
               ? aToken.value
@@ -379,11 +379,11 @@
     };
 
     let formulaChanged = event => {
-      let t0 = performance.now();
+      const t0 = performance.now();
       msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
       msgEl.classList.remove('hide');
       let results = [];
-      let expressions = inEl.value.split('\n');
+      const expressions = inEl.value.split('\n');
       let errorFound = false;
       for (const expr of expressions) {
         const result = calculate(expr);
@@ -397,7 +397,7 @@
         }
       }
       if (!errorFound) {
-        let dt = 1e-3 * (performance.now() - t0);
+        const dt = 1e-3 * (performance.now() - t0);
         msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
         msgEl.classList.add('hide');
         if (results.length > 0) {
@@ -457,7 +457,7 @@
     <p><span id="msg"></span></p>
     <hr style="margin-top: 29pt; margin-bottom: 7pt;" />
     <dp><span style="font-size: smaller">
-        <strong>Arbitrary Precision Calculator</strong> v0.1.1 &ndash;
+        <strong>Arbitrary Precision Calculator</strong> v0.2-EXPERIMENTAL &ndash;
         Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, <a
           href="https://www.heise-gruppe.de/heise-medien.html" target="_blank">Heise Medien GmbH & Co. KG</a>, <a
           href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
