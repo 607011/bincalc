@@ -142,7 +142,7 @@
     };
 
     Token.Types = [
-      { regex: /^(~=|~|&=|\^=|\/=|\^|\&|\||\+|\-|\*\*|\*|\/|%|<<|>>|<=|>=|<|>|=)/, type: Token.Type.Operator, name: 'operator' },
+      { regex: /^(~=|~|&=|\^=|\/=|\^|\&|\||\+|\-|\*\*|\*|\/|%|==|!=|<<|>>|<=|>=|<|>|=)/, type: Token.Type.Operator, name: 'operator' },
       { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
       { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
       { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, name: 'binary' },
@@ -202,6 +202,10 @@
         assoc: LEFT,
       },
       '==': {
+        prec: -9,
+        assoc: LEFT,
+      },
+      '!=': {
         prec: -9,
         assoc: LEFT,
       },
@@ -380,6 +384,12 @@
                     break;
                   case '>=':
                     s.push(new Token(Token.Type.Literal, a.value >= b.value ? 1 : 0));
+                    break;
+                  case '==':
+                    s.push(new Token(Token.Type.Literal, a.value == b.value ? 1 : 0));
+                    break;
+                  case '!=':
+                    s.push(new Token(Token.Type.Literal, a.value != b.value ? 1 : 0));
                     break;
                 }
               }
