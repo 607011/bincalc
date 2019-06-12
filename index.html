@@ -165,6 +165,10 @@
         prec: -3,
         assoc: RIGHT,
       },
+      '**': {
+        prec: -4,
+        assoc: RIGHT,
+      },
       '*': {
         prec: -5,
         assoc: LEFT,
@@ -317,6 +321,10 @@
       return queue;
     }
 
+    let newLiteral = value => {
+      return new Token(Token.Type.Literal, value);
+    }
+
     let formulaChanged = event => {
       let result = tokenize(inEl.value);
       if (result.error) {
@@ -328,7 +336,6 @@
       }
       if (result.tokens) {
         let tokens = shuntingYard(result.tokens);
-        console.log(tokens);
         let s = [];
         for (const t of tokens) {
           if (t.type === Token.Type.Literal) {
@@ -344,52 +351,55 @@
               try {
                 switch (t.value) {
                   case '+':
-                    s.push(new Token(Token.Type.Literal, a.value + b.value));
+                    s.push(newLiteral(a.value + b.value));
                     break;
                   case '-':
-                    s.push(new Token(Token.Type.Literal, a.value - b.value));
+                    s.push(newLiteral(a.value - b.value));
                     break;
                   case '*':
-                    s.push(new Token(Token.Type.Literal, a.value * b.value));
+                    s.push(newLiteral(a.value * b.value));
+                    break;
+                  case '**':
+                    s.push(newLiteral(a.value ** b.value));
                     break;
                   case '/':
-                    s.push(new Token(Token.Type.Literal, a.value / b.value));
+                    s.push(newLiteral(a.value / b.value));
                     break;
                   case '%':
-                    s.push(new Token(Token.Type.Literal, a.value % b.value));
+                    s.push(newLiteral(a.value % b.value));
                     break;
                   case '^':
-                    s.push(new Token(Token.Type.Literal, a.value ^ b.value));
+                    s.push(newLiteral(a.value ^ b.value));
                     break;
                   case '|':
-                    s.push(new Token(Token.Type.Literal, a.value | b.value));
+                    s.push(newLiteral(a.value | b.value));
                     break;
                   case '&':
-                    s.push(new Token(Token.Type.Literal, a.value & b.value));
+                    s.push(newLiteral(a.value & b.value));
                     break;
                   case '<<':
-                    s.push(new Token(Token.Type.Literal, a.value << b.value));
+                    s.push(newLiteral(a.value << b.value));
                     break;
                   case '>>':
-                    s.push(new Token(Token.Type.Literal, a.value >> b.value));
+                    s.push(newLiteral(a.value >> b.value));
                     break;
                   case '<':
-                    s.push(new Token(Token.Type.Literal, a.value < b.value ? 1 : 0));
+                    s.push(newLiteral(a.value < b.value ? 1 : 0));
                     break;
                   case '>':
-                    s.push(new Token(Token.Type.Literal, a.value > b.value ? 1 : 0));
+                    s.push(newLiteral(a.value > b.value ? 1 : 0));
                     break;
                   case '<=':
-                    s.push(new Token(Token.Type.Literal, a.value <= b.value ? 1 : 0));
+                    s.push(newLiteral(a.value <= b.value ? 1 : 0));
                     break;
                   case '>=':
-                    s.push(new Token(Token.Type.Literal, a.value >= b.value ? 1 : 0));
+                    s.push(newLiteral(a.value >= b.value ? 1 : 0));
                     break;
                   case '==':
-                    s.push(new Token(Token.Type.Literal, a.value == b.value ? 1 : 0));
+                    s.push(newLiteral(a.value == b.value ? 1 : 0));
                     break;
                   case '!=':
-                    s.push(new Token(Token.Type.Literal, a.value != b.value ? 1 : 0));
+                    s.push(newLiteral(a.value != b.value ? 1 : 0));
                     break;
                 }
               }
@@ -400,10 +410,10 @@
             else if (b instanceof Token) {
               switch (t.value) {
                 case '-':
-                  s.push(new Token(Token.Type.Literal, -b.value));
+                  s.push(newLiteral(-b.value));
                   break;
                 case '~':
-                  s.push(new Token(Token.Type.Literal, ~b.value));
+                  s.push(newLiteral(~b.value));
                   break;
               }
             }
