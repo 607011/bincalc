@@ -68,7 +68,7 @@
   textarea {
     background-color: white;
     color: black;
-    font-family: "Courier New", Courier, monospace;
+    font-family: 'Courier New', Courier, monospace;
     font-size: 12pt;
     padding: 4pt;
     width: 100%;
@@ -78,13 +78,6 @@
 <script type="text/javascript">
   (function (window) {
     'use strict';
-    let inEl = null;
-    let outEl = null;
-    let msgEl = null;
-    let baseFormEl = null;
-    let values = [];
-    let ops = [];
-    let base = localStorage.getItem('base') || 2;
     const Padding = (function (length) {
       let padding = '';
       for (let i = 0; i < length; ++i) {
@@ -93,34 +86,64 @@
       return padding;
     })(512);
 
-    Array.prototype.peek = function () { return this[this.length - 1]; };
+    let inEl = null;
+    let outEl = null;
+    let msgEl = null;
+    let baseFormEl = null;
+    let values = [];
+    let ops = [];
+    let base = localStorage.getItem('base') || 2;
+
+    class Stack {
+      constructor() {
+        this._stack = [];
+        this._nextIndex = 0;
+      }
+      push(value) {
+        this._stack.push(value);
+      }
+      pop() {
+        return this._stack.pop();
+      }
+      get top() {
+        return this._stack[this._stack.length - 1];
+      }
+      get length() {
+        return this._stack.length;
+      }
+      [Symbol.iterator]() {
+        return {
+          next: () => {
+            if (this._nextIndex < this.length) {
+              return { value: this._stack[this._nextIndex++], done: false };
+            }
+            this._nextIndex = 0;
+            return { done: true };
+          }
+        }
+      }
+    }
 
     class Token {
       constructor(type, value) {
         this._type = type;
         this._value = value;
       }
-
       get type() {
         return this._type;
       }
-
       get value() {
         return this._value;
       }
-
       set type(t) {
         this._type = t;
       }
-
       set value(v) {
         this._value = v;
       }
-
       get precedence() {
         return Token.Operator[this.value].prec;
       }
-
       get associativity() {
         return Token.Operator[this.value].assoc;
       }
@@ -277,8 +300,8 @@
     }
 
     let shuntingYard = tokens => {
-      let ops = [];
-      let queue = [];
+      let ops = new Stack();
+      let queue = new Stack();
       for (const token of tokens) {
         switch (token.type) {
           case Token.Type.Literal:
@@ -287,13 +310,13 @@
             queue.push(token);
             break;
           case Token.Type.Operator:
-            while (ops.peek() &&
-              (ops.peek().type !== Token.Type.LeftParenthesis)
+            while (ops.top &&
+              (ops.top.type !== Token.Type.LeftParenthesis)
               &&
               (
-                (ops.peek().precedence > token.precedence)
+                (ops.top.precedence > token.precedence)
                 ||
-                (ops.peek().precedence === token.precedence && ops.peek().associativity === LEFT)
+                (ops.top.precedence === token.precedence && ops.top.associativity === LEFT)
               )
             ) {
               queue.push(ops.pop());
@@ -304,10 +327,10 @@
             ops.push(token);
             break;
           case Token.Type.RightParenthesis:
-            while (ops.peek() && ops.peek().type !== Token.Type.LeftParenthesis) {
+            while (ops.top && ops.top.type !== Token.Type.LeftParenthesis) {
               queue.push(ops.pop());
             }
-            if (ops.peek().type === Token.Type.LeftParenthesis) {
+            if (ops.top.type === Token.Type.LeftParenthesis) {
               ops.pop();
             }
             break;
@@ -325,7 +348,7 @@
       return new Token(Token.Type.Literal, value);
     }
 
-    let formulaChanged = event => {
+    let calculate = () => {
       let result = tokenize(inEl.value);
       if (result.error) {
         msgEl.innerText = result.error;
@@ -336,7 +359,7 @@
       }
       if (result.tokens) {
         let tokens = shuntingYard(result.tokens);
-        let s = [];
+        let s = new Stack();
         for (const t of tokens) {
           if (t.type === Token.Type.Literal) {
             s.push(t);
@@ -420,7 +443,7 @@
           }
         }
         if (s.length === 1) {
-          outEl.value = s[0].value.toString(base);
+          outEl.value = s.top.value.toString(base);
           msgEl.value = '';
         }
         else {
@@ -428,6 +451,17 @@
           msgEl.value = 'invalid expression';
         }
       }
+
+    };
+
+    let formulaChanged = event => {
+      let t0 = performance.now();
+      msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
+      setTimeout(() => {
+        calculate();
+        let dt = 1e-3*(performance.now() - t0);
+        msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
+      }, 0);
     };
 
     let baseChanged = event => {
@@ -475,7 +509,9 @@
         Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, <a
           href="https://www.heise-gruppe.de/heise-medien.html" target="_blank">Heise Medien GmbH & Co. KG</a>, <a
           href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
-      <p><span style="font-size: smaller"><em>(Uses <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt" target="_blank">BigInt</a>, therefore Chrome 67, Firefox 68 or Opera 54 are needed.)</em></span></p>
+      <p><span style="font-size: smaller"><em>(Uses <a
+              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt"
+              target="_blank">BigInt</a>, therefore Chrome 67, Firefox 68 or Opera 54 are needed.)</em></span></p>
   </div>
 </body>
 
