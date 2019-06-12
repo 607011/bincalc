@@ -107,9 +107,8 @@
     let outEl = null;
     let msgEl = null;
     let baseFormEl = null;
-    let values = [];
-    let ops = [];
     let base = localStorage.getItem('base') || 2;
+    let variables = {};
 
     class Stack {
       constructor() {
@@ -285,68 +284,73 @@
         let s = new Stack();
         let tokens = shuntingYard(result.tokens);
         for (const t of tokens) {
-          if (t.type === Token.Type.Literal) {
+          if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
             s.push(t);
           }
-          else if (t.type === Token.Type.Variable) {
-            s.push(t); // XXX
-          }
           else {
-            let b = s.pop();
-            let a = s.pop();
-            if (a instanceof Token && b instanceof Token) {
+            let bToken = s.pop();
+            let aToken = s.pop();
+            if (aToken instanceof Token && bToken instanceof Token) {
+              let a = (aToken.type === Token.Type.Literal)
+              ? aToken.value
+              : variables[aToken.value];
+              let b = (bToken.type === Token.Type.Literal)
+              ? bToken.value
+              : variables[bToken.value];
               try {
                 switch (t.value) {
+                  case '=':
+                    variables[aToken.value] = b;
                   case '+':
-                    s.push(newLiteral(a.value + b.value));
+                    s.push(newLiteral(a + b));
                     break;
                   case '-':
-                    s.push(newLiteral(a.value - b.value));
+                    s.push(newLiteral(a - b));
                     break;
                   case '*':
-                    s.push(newLiteral(a.value * b.value));
+                    s.push(newLiteral(a * b));
                     break;
                   case '**':
-                    s.push(newLiteral(a.value ** b.value));
+                    s.push(newLiteral(a ** b));
                     break;
                   case '/':
-                    s.push(newLiteral(a.value / b.value));
+                    s.push(newLiteral(a / b));
                     break;
                   case '%':
-                    s.push(newLiteral(a.value % b.value));
+                    s.push(newLiteral(a % b));
                     break;
                   case '^':
-                    s.push(newLiteral(a.value ^ b.value));
+                    s.push(newLiteral(a ^ b));
                     break;
                   case '|':
-                    s.push(newLiteral(a.value | b.value));
+                    s.push(newLiteral(a | b));
                     break;
                   case '&':
-                    s.push(newLiteral(a.value & b.value));
+                    s.push(newLiteral(a & b));
                     break;
                   case '<<':
-                    s.push(newLiteral(a.value << b.value));
+                    s.push(newLiteral(a << b));
                     break;
                   case '>>':
-                    s.push(newLiteral(a.value >> b.value));
+                    s.push(newLiteral(a >> b));
                     break;
                   case '<':
-                    s.push(newLiteral(a.value < b.value ? 1n : 0n));
+                    s.push(newLiteral(a < b ? 1n : 0n));
                     break;
                   case '>':
-                    s.push(newLiteral(a.value > b.value ? 1n : 0n));
+                    s.push(newLiteral(a > b ? 1n : 0n));
                     break;
                   case '<=':
-                    s.push(newLiteral(a.value <= b.value ? 1n : 0n));
+                    s.push(newLiteral(a <= b ? 1n : 0n));
                     break;
                   case '>=':
-                    s.push(newLiteral(a.value >= b.value ? 1n : 0n));
+                    s.push(newLiteral(a >= b ? 1n : 0n));
                     break;
                   case '==':
-                    s.push(newLiteral(a.value == b.value ? 1n : 0n));
+                    s.push(newLiteral(a == b ? 1n : 0n));
                     break;
                   case '!=':
-                    s.push(newLiteral(a.value != b.value ? 1n : 0n));
+                    s.push(newLiteral(a != b ? 1n : 0n));
                     break;
                 }
               }
@@ -354,7 +358,7 @@
                 console.error(e);
               }
             }
-            else if (b instanceof Token) {
+            else if (bToken instanceof Token) {
               switch (t.value) {
                 case '-':
                   s.push(newLiteral(-b.value));
@@ -366,6 +370,7 @@
             }
           }
         }
+        console.log(variables);
         if (s.length === 1) {
           return { result: s.top.value.toString(base) };
         }
@@ -377,30 +382,28 @@
       let t0 = performance.now();
       msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
       msgEl.classList.remove('hide');
-      setTimeout(() => {
-        let results = [];
-        let expressions = inEl.value.split('\n');
-        let errorFound = false;
-        for (const expr of expressions) {
-          const result = calculate(expr);
-          if (result.result) {
-            results.push(result);
-          }
-          else {
-            msgEl.innerHTML = result.error;
-            errorFound = true;
-            break;
-          }
+      let results = [];
+      let expressions = inEl.value.split('\n');
+      let errorFound = false;
+      for (const expr of expressions) {
+        const result = calculate(expr);
+        if (result.result) {
+          results.push(result);
         }
-        if (!errorFound) {
-          let dt = 1e-3 * (performance.now() - t0);
-          msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
-          msgEl.classList.add('hide');
-          if (results.length > 0) {
-            outEl.value = results.map(r => r.result).join('\n');
-          }
+        else {
+          msgEl.innerHTML = result.error;
+          errorFound = true;
+          break;
         }
-      }, 0);
+      }
+      if (!errorFound) {
+        let dt = 1e-3 * (performance.now() - t0);
+        msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
+        msgEl.classList.add('hide');
+        if (results.length > 0) {
+          outEl.value = results.map(r => r.result).join('\n');
+        }
+      }
     };
 
     let baseChanged = event => {
