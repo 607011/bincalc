@@ -65,6 +65,23 @@
     display: inline-block;
   }
 
+  .hide {
+    animation-delay: 1s;
+    animation-duration: 250ms;
+    animation-name: hide;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
+  }
+
+  @keyframes hide {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
   textarea {
     background-color: white;
     color: black;
@@ -157,12 +174,7 @@
       return obj;
     })(['Literal', 'Operator', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
 
-    Token.BasePrefix = {
-      2: '0b',
-      8: '0o',
-      10: '',
-      16: '0x',
-    };
+    Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
 
     Token.Types = [
       { regex: /^(~=|~|&=|\^=|\/=|\^|\&|\||\+|\-|\*\*|\*|\/|%|==|!=|<<|>>|<=|>=|<|>|=)/, type: Token.Type.Operator, name: 'operator' },
@@ -175,92 +187,8 @@
       { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, name: 'variable' },
     ];
 
-    const LEFT = -1;
-    const RIGHT = 1;
-
-    // see https://en.cppreference.com/w/cpp/language/operator_precedence
-    Token.Operator = {
-      '-': {
-        prec: -3,
-        assoc: RIGHT,
-      },
-      '~': {
-        prec: -3,
-        assoc: RIGHT,
-      },
-      '**': {
-        prec: -4,
-        assoc: RIGHT,
-      },
-      '*': {
-        prec: -5,
-        assoc: LEFT,
-      },
-      '/': {
-        prec: -5,
-        assoc: LEFT,
-      },
-      '%': {
-        prec: -5,
-        assoc: LEFT,
-      },
-      '+': {
-        prec: -6,
-        assoc: LEFT,
-      },
-      '-': {
-        prec: -6,
-        assoc: LEFT,
-      },
-      '<<': {
-        prec: -7,
-        assoc: LEFT,
-      },
-      '>>': {
-        prec: -7,
-        assoc: LEFT,
-      },
-      '<': {
-        prec: -9,
-        assoc: LEFT,
-      },
-      '>': {
-        prec: -9,
-        assoc: LEFT,
-      },
-      '==': {
-        prec: -9,
-        assoc: LEFT,
-      },
-      '!=': {
-        prec: -9,
-        assoc: LEFT,
-      },
-      '<=': {
-        prec: -9,
-        assoc: LEFT,
-      },
-      '>=': {
-        prec: -9,
-        assoc: LEFT,
-      },
-      '&': {
-        prec: -11,
-        assoc: LEFT,
-      },
-      '^': {
-        prec: -12,
-        assoc: LEFT,
-      },
-      '|': {
-        prec: -13,
-        assoc: LEFT,
-      },
-      '=': {
-        prec: -16,
-        assoc: RIGHT,
-      }
-    };
+    const LEFT = 'left';
+    const RIGHT = 'right';
 
     let tokenize = str => {
       let expr = str.replace(/\s+/g, '');
@@ -348,18 +276,14 @@
       return new Token(Token.Type.Literal, value);
     }
 
-    let calculate = () => {
-      let result = tokenize(inEl.value);
+    let calculate = expr => {
+      let result = tokenize(expr);
       if (result.error) {
-        msgEl.innerText = result.error;
-        return;
-      }
-      else {
-        msgEl.innerText = '';
+        return result;
       }
       if (result.tokens) {
-        let tokens = shuntingYard(result.tokens);
         let s = new Stack();
+        let tokens = shuntingYard(result.tokens);
         for (const t of tokens) {
           if (t.type === Token.Type.Literal) {
             s.push(t);
@@ -407,22 +331,22 @@
                     s.push(newLiteral(a.value >> b.value));
                     break;
                   case '<':
-                    s.push(newLiteral(a.value < b.value ? 1 : 0));
+                    s.push(newLiteral(a.value < b.value ? 1n : 0n));
                     break;
                   case '>':
-                    s.push(newLiteral(a.value > b.value ? 1 : 0));
+                    s.push(newLiteral(a.value > b.value ? 1n : 0n));
                     break;
                   case '<=':
-                    s.push(newLiteral(a.value <= b.value ? 1 : 0));
+                    s.push(newLiteral(a.value <= b.value ? 1n : 0n));
                     break;
                   case '>=':
-                    s.push(newLiteral(a.value >= b.value ? 1 : 0));
+                    s.push(newLiteral(a.value >= b.value ? 1n : 0n));
                     break;
                   case '==':
-                    s.push(newLiteral(a.value == b.value ? 1 : 0));
+                    s.push(newLiteral(a.value == b.value ? 1n : 0n));
                     break;
                   case '!=':
-                    s.push(newLiteral(a.value != b.value ? 1 : 0));
+                    s.push(newLiteral(a.value != b.value ? 1n : 0n));
                     break;
                 }
               }
@@ -443,24 +367,39 @@
           }
         }
         if (s.length === 1) {
-          outEl.value = s.top.value.toString(base);
-          msgEl.value = '';
-        }
-        else {
-          outEl.value = '';
-          msgEl.value = 'invalid expression';
+          return { result: s.top.value.toString(base) };
         }
       }
-
+      return { error: 'invalid expression' };
     };
 
     let formulaChanged = event => {
       let t0 = performance.now();
       msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
+      msgEl.classList.remove('hide');
       setTimeout(() => {
-        calculate();
-        let dt = 1e-3*(performance.now() - t0);
-        msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
+        let results = [];
+        let expressions = inEl.value.split('\n');
+        let errorFound = false;
+        for (const expr of expressions) {
+          const result = calculate(expr);
+          if (result.result) {
+            results.push(result);
+          }
+          else {
+            msgEl.innerHTML = result.error;
+            errorFound = true;
+            break;
+          }
+        }
+        if (!errorFound) {
+          let dt = 1e-3 * (performance.now() - t0);
+          msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
+          msgEl.classList.add('hide');
+          if (results.length > 0) {
+            outEl.value = results.map(r => r.result).join('\n');
+          }
+        }
       }, 0);
     };
 
@@ -480,6 +419,16 @@
       document.getElementById(`base-${base}`).checked = true;
     }
 
+    let loadResources = () => {
+      fetch('token.json')
+        .then(res => res.json())
+        .then(out => {
+          Token.Operator = out;
+        })
+        .catch(err => { throw err });
+    };
+
+    loadResources();
     window.addEventListener('load', main);
   })(window);
 </script>
@@ -505,13 +454,13 @@
     <p><span id="msg"></span></p>
     <hr style="margin-top: 29pt; margin-bottom: 7pt;" />
     <dp><span style="font-size: smaller">
-        Arbitrary Precision Calculator v0.1.1 &ndash;
+        <strong>Arbitrary Precision Calculator</strong> v0.1.1 &ndash;
         Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, <a
           href="https://www.heise-gruppe.de/heise-medien.html" target="_blank">Heise Medien GmbH & Co. KG</a>, <a
           href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
       <p><span style="font-size: smaller"><em>(Uses <a
               href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt"
-              target="_blank">BigInt</a>, therefore Chrome 67, Firefox 68 or Opera 54 are needed.)</em></span></p>
+              target="_blank">BigInt</a>, therefore Chrome &ge;67, Firefox &ge;68 or Opera &ge;54 are needed.)</em></span></p>
   </div>
 </body>
 
