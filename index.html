@@ -224,7 +224,7 @@
                   value = BigInt(Token.BasePrefix[t.base] + symbol);
                 }
                 catch (e) {
-                  console.error(e);
+                  return { error: e };
                 }
                 break;
               default:
@@ -300,11 +300,9 @@
       if (result.error) {
         return result;
       }
-      console.log('tokens =', result.tokens);
       if (result.tokens) {
         let s = new Stack();
         const tokens = shuntingYard(result.tokens);
-        console.log('RPN =', tokens._stack);
         for (const t of tokens) {
           if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
             s.push(t);
@@ -346,11 +344,8 @@
                   }
                 }
                 catch (e) {
-                  console.error(e);
+                  return { error: e};
                 }
-              }
-              else if (bToken instanceof Token) {
-                console.log(s, bToken);
               }
             }
           }
@@ -358,13 +353,13 @@
         if (s.length === 1) {
           if (s.top.type === Token.Type.Variable) {
             if (variables.hasOwnProperty(s.top.value)) {
-              return { result: variables[s.top.value].toString(base) };
+              return { result: variables[s.top.value] };
             }
             else {
-              return { error: `undefined variable '${s.top.value}'`}
+              return { error: `undefined variable '${s.top.value}'` }
             }
           }
-          return { result: s.top.value.toString(base) };
+          return { result: s.top.value };
         }
         else {
           return { result: undefined };
@@ -381,16 +376,20 @@
       let results = [];
       const expressions = inEl.value.split('\n');
       let errorFound = false;
+      variables = {};
       for (const expr of expressions) {
-        const {result, error} = calculate(expr);
+        const { result, error } = calculate(expr);
         if (error) {
           msgEl.innerHTML = error;
           msgEl.classList.add('error');
           errorFound = true;
           break;
         }
-        else if (result) {
-          results.push(result);
+        else if (typeof result === 'bigint') {
+          results.push(result.toString(base));
+        }
+        else {
+          msgEl.innerHTML = '';
         }
       }
       if (!errorFound) {
