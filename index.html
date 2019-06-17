@@ -377,6 +377,7 @@
       const t0 = performance.now();
       msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
       msgEl.classList.remove('hide');
+      msgEl.classList.remove('error');
       let results = [];
       const expressions = inEl.value.split('\n');
       let errorFound = false;
@@ -384,6 +385,7 @@
         const {result, error} = calculate(expr);
         if (error) {
           msgEl.innerHTML = error;
+          msgEl.classList.add('error');
           errorFound = true;
           break;
         }
@@ -407,7 +409,8 @@
       formulaChanged();
     };
 
-    let main = () => {
+    let main = operatorMap => {
+      Token.Operator = operatorMap;
       inEl = document.getElementById('input');
       inEl.addEventListener('input', formulaChanged);
       outEl = document.getElementById('output');
@@ -420,9 +423,8 @@
     let init = () => {
       fetch('token.json')
         .then(res => res.json())
-        .then(out => {
-          Token.Operator = out;
-          main();
+        .then(operators => {
+          main(operators);
         })
         .catch(err => { throw err });
     };
