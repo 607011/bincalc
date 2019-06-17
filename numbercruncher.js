@@ -218,29 +218,34 @@ let calculate = expr => {
             let b = (bToken.type === Token.Type.Literal)
               ? bToken.value
               : variables[bToken.value];
-            let r = undefined;
-            switch (t.value) {
-              case '=': variables[aToken.value] = b; break;
-              case '+': r = a + b; break;
-              case '-': r = a - b; break;
-              case '*': r = a * b; break;
-              case '**': r = a ** b; break;
-              case '/': r = a / b; break;
-              case '%': r = a % b; break;
-              case '^': r = a ^ b; break;
-              case '|': r = a | b; break;
-              case '&': r = a & b; break;
-              case '<<': r = a << b; break;
-              case '>>': r = a >> b; break;
-              case '<': r = a < b ? 1n : 0n; break;
-              case '>': r = a > b ? 1n : 0n; break;
-              case '<=': r = a <= b ? 1n : 0n; break;
-              case '>=': r = a >= b ? 1n : 0n; break;
-              case '==': r = a == b ? 1n : 0n; break;
-              case '!=': r = a != b ? 1n : 0n; break;
-              default: return { error: `unknown operator: ${t.value}`};
+            let r;
+            try {
+              switch (t.value) {
+                case '=': variables[aToken.value] = b; break;
+                case '+': r = a + b; break;
+                case '-': r = a - b; break;
+                case '*': r = a * b; break;
+                case '**': r = a ** b; break;
+                case '/': r = a / b; break;
+                case '%': r = a % b; break;
+                case '^': r = a ^ b; break;
+                case '|': r = a | b; break;
+                case '&': r = a & b; break;
+                case '<<': r = a << b; break;
+                case '>>': r = a >> b; break;
+                case '<': r = a < b ? 1n : 0n; break;
+                case '>': r = a > b ? 1n : 0n; break;
+                case '<=': r = a <= b ? 1n : 0n; break;
+                case '>=': r = a >= b ? 1n : 0n; break;
+                case '==': r = a == b ? 1n : 0n; break;
+                case '!=': r = a != b ? 1n : 0n; break;
+                default: return { error: `unknown operator: ${t.value}` };
+              }
             }
-            if (r) {
+            catch (e) {
+              return { error: `invalid expression (${e.name})` };
+            }
+            if (typeof r === 'bigint') {
               s.push(new Token(Token.Type.Literal, r));
             }
           }
