@@ -100,12 +100,10 @@ Token.Types = [
   { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
 ];
 
+
 let variables = {};
 let results = [];
 
-let newLiteral = value => {
-  return new Token(Token.Type.Literal, value);
-}
 
 let tokenize = str => {
   let expr = str.replace(/\s+/g, '');
@@ -211,9 +209,6 @@ let calculate = expr => {
           const bToken = s.pop();
           const aToken = s.pop();
           if (aToken instanceof Token && bToken instanceof Token) {
-            if (aToken.type === Token.Type.Variable && !variables.hasOwnProperty(aToken.value)) {
-              return { error: `undefined variable '${aToken.value}'` };
-            }
             if (bToken.type === Token.Type.Variable && !variables.hasOwnProperty(bToken.value)) {
               return { error: `undefined variable '${bToken.value}'` };
             }
@@ -223,25 +218,30 @@ let calculate = expr => {
             let b = (bToken.type === Token.Type.Literal)
               ? bToken.value
               : variables[bToken.value];
+            let r = undefined;
             switch (t.value) {
               case '=': variables[aToken.value] = b; break;
-              case '+': s.push(newLiteral(a + b)); break;
-              case '-': s.push(newLiteral(a - b)); break;
-              case '*': s.push(newLiteral(a * b)); break;
-              case '**': s.push(newLiteral(a ** b)); break;
-              case '/': s.push(newLiteral(a / b)); break;
-              case '%': s.push(newLiteral(a % b)); break;
-              case '^': s.push(newLiteral(a ^ b)); break;
-              case '|': s.push(newLiteral(a | b)); break;
-              case '&': s.push(newLiteral(a & b)); break;
-              case '<<': s.push(newLiteral(a << b)); break;
-              case '>>': s.push(newLiteral(a >> b)); break;
-              case '<': s.push(newLiteral(a < b ? 1n : 0n)); break;
-              case '>': s.push(newLiteral(a > b ? 1n : 0n)); break;
-              case '<=': s.push(newLiteral(a <= b ? 1n : 0n)); break;
-              case '>=': s.push(newLiteral(a >= b ? 1n : 0n)); break;
-              case '==': s.push(newLiteral(a == b ? 1n : 0n)); break;
-              case '!=': s.push(newLiteral(a != b ? 1n : 0n)); break;
+              case '+': r = a + b; break;
+              case '-': r = a - b; break;
+              case '*': r = a * b; break;
+              case '**': r = a ** b; break;
+              case '/': r = a / b; break;
+              case '%': r = a % b; break;
+              case '^': r = a ^ b; break;
+              case '|': r = a | b; break;
+              case '&': r = a & b; break;
+              case '<<': r = a << b; break;
+              case '>>': r = a >> b; break;
+              case '<': r = a < b ? 1n : 0n; break;
+              case '>': r = a > b ? 1n : 0n; break;
+              case '<=': r = a <= b ? 1n : 0n; break;
+              case '>=': r = a >= b ? 1n : 0n; break;
+              case '==': r = a == b ? 1n : 0n; break;
+              case '!=': r = a != b ? 1n : 0n; break;
+              default: return { error: `unknown operator: ${t.value}`};
+            }
+            if (r) {
+              s.push(new Token(Token.Type.Literal, r));
             }
           }
         }
