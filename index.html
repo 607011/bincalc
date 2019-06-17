@@ -115,6 +115,7 @@
     let baseFormEl = null;
     let base = localStorage.getItem('base') || 2;
     let variables = {};
+    let results = [];
 
     Array.prototype.last = () => this[this.length - 1];
 
@@ -295,14 +296,19 @@
       return new Token(Token.Type.Literal, value);
     }
 
+    let runAsync = callback => {
+      setTimeout(callback, 0);
+    }
+
     let calculate = expr => {
-      const result = tokenize(expr);
-      if (result.error) {
-        return result;
+      console.log(`calculate("${expr}")`);
+      let { tokens, error } = tokenize(expr);
+      if (error) {
+        return;
       }
-      if (result.tokens) {
+      if (tokens) {
         let s = new Stack();
-        const tokens = shuntingYard(result.tokens);
+        tokens = shuntingYard(tokens);
         for (const t of tokens) {
           if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
             s.push(t);
@@ -344,7 +350,7 @@
                   }
                 }
                 catch (e) {
-                  return { error: e};
+                  return { error: e };
                 }
               }
             }
@@ -373,7 +379,7 @@
       msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
       msgEl.classList.remove('hide');
       msgEl.classList.remove('error');
-      let results = [];
+      results = [];
       const expressions = inEl.value.split('\n');
       let errorFound = false;
       variables = {};
@@ -386,26 +392,31 @@
           break;
         }
         else if (typeof result === 'bigint') {
-          results.push(result.toString(base));
+          results.push(result);
         }
         else {
           msgEl.innerHTML = '';
         }
       }
       if (!errorFound) {
-        const dt = 1e-3 * (performance.now() - t0);
-        msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
-        msgEl.classList.add('hide');
-        if (results.length > 0) {
-          outEl.value = results.join('\n');
-        }
+        runAsync(() => {
+          const dt = 1e-3 * (performance.now() - t0);
+          msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
+          msgEl.classList.add('hide');
+          displayResults();
+        });
       }
+    };
+
+    let displayResults = () => {
+      console.log('displayResults()');
+      outEl.value = results.map(result => result.toString(base)).join('\n');
     };
 
     let baseChanged = event => {
       base = parseInt(event.target.value);
       localStorage.setItem('base', base);
-      formulaChanged();
+      displayResults();
     };
 
     let main = operatorMap => {
