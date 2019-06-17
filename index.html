@@ -63,6 +63,11 @@
   #msg {
     min-height: 5ex;
     display: inline-block;
+    font-weight: bold;
+  }
+
+  .error {
+    color: rgb(223, 53, 53);
   }
 
   .hide {
@@ -77,6 +82,7 @@
     from {
       opacity: 1;
     }
+
     to {
       opacity: 0;
     }
@@ -89,7 +95,7 @@
     font-size: 12pt;
     padding: 4pt;
     width: 100%;
-    height: 50pt;
+    height: 20%;
   }
 </style>
 <script type="text/javascript">
@@ -110,7 +116,7 @@
     let base = localStorage.getItem('base') || 2;
     let variables = {};
 
-    Array.prototype.last = () => this[this.length-1];
+    Array.prototype.last = () => this[this.length - 1];
 
     class Stack {
       constructor() {
@@ -349,9 +355,19 @@
             }
           }
         }
-        console.log('variables =', variables);
         if (s.length === 1) {
+          if (s.top.type === Token.Type.Variable) {
+            if (variables.hasOwnProperty(s.top.value)) {
+              return { result: variables[s.top.value].toString(base) };
+            }
+            else {
+              return { error: `undefined variable '${s.top.value}'`}
+            }
+          }
           return { result: s.top.value.toString(base) };
+        }
+        else {
+          return { result: undefined };
         }
       }
       return { error: 'invalid expression' };
@@ -365,14 +381,14 @@
       const expressions = inEl.value.split('\n');
       let errorFound = false;
       for (const expr of expressions) {
-        const result = calculate(expr);
-        if (result.result) {
-          results.push(result);
-        }
-        else {
-          msgEl.innerHTML = result.error;
+        const {result, error} = calculate(expr);
+        if (error) {
+          msgEl.innerHTML = error;
           errorFound = true;
           break;
+        }
+        else if (result) {
+          results.push(result);
         }
       }
       if (!errorFound) {
@@ -380,7 +396,7 @@
         msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
         msgEl.classList.add('hide');
         if (results.length > 0) {
-          outEl.value = results.map(r => r.result).join('\n');
+          outEl.value = results.join('\n');
         }
       }
     };
@@ -442,7 +458,8 @@
           href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
       <p><span style="font-size: smaller"><em>(Uses <a
               href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt"
-              target="_blank">BigInt</a>, therefore Chrome &ge;67, Firefox &ge;68 or Opera &ge;54 are needed.)</em></span></p>
+              target="_blank">BigInt</a>, therefore Chrome &ge;67, Firefox &ge;68 or Opera &ge;54 are
+            needed.)</em></span></p>
   </div>
 </body>
 
