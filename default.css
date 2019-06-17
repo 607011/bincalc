@@ -31,6 +31,13 @@ a:hover {
 
 .app {
   padding: 5pt;
+  position: relative;
+}
+
+#help {
+  position: absolute;
+  border: 1px solid #333;
+  background-color: white;
 }
 
 p {
@@ -47,6 +54,10 @@ p {
   color: rgb(223, 53, 53);
 }
 
+.hidden {
+  display: none;
+}
+
 .hide {
   animation-delay: 1s;
   animation-duration: 250ms;
@@ -55,20 +66,20 @@ p {
   animation-fill-mode: forwards;
 }
 
+.show {
+  display: block;
+}
+
 th {
   text-align: left;
 }
 
-td:first-child {
-  padding-right: 1em;
-}
-
-tbody > tr > td:first-child {
-  text-align: right;
-}
-
 tfoot > tr > td {
   padding-top: 2ex;
+}
+
+table {
+  margin: 12pt;
 }
 
 tfoot td {

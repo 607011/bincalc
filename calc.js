@@ -10,6 +10,7 @@
   let base = localStorage.getItem('base') || 2;
   let results = [];
   let numberCruncher = null;
+  let helpEl = null;
 
   let formulaChanged = () => {
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
@@ -55,6 +56,24 @@
     baseFormEl = document.getElementById('base-form');
     baseFormEl.addEventListener('change', baseChanged);
     document.getElementById(`base-${base}`).checked = true;
+    helpEl = document.getElementById('help');
+    fetch('help.html')
+    .then(response => {
+      response.body.getReader().read().then(html => {
+        helpEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
+      });
+    })
+    .then(() => {
+      document.getElementById('help-button').addEventListener('click', () => {
+        if (helpEl.classList.contains('hidden')) {
+          helpEl.classList.remove('hidden');
+        }
+        else {
+          helpEl.classList.add('hidden');
+        }
+      });
+    });
+
   };
 
   window.addEventListener('load', init);
