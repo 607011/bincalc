@@ -110,6 +110,8 @@
     let base = localStorage.getItem('base') || 2;
     let variables = {};
 
+    Array.prototype.last = () => this[this.length-1];
+
     class Stack {
       constructor() {
         this._stack = [];
@@ -123,6 +125,9 @@
       }
       get top() {
         return this._stack[this._stack.length - 1];
+      }
+      set top(v) {
+        this._stack[this._stack.length - 1] = v;
       }
       get length() {
         return this._stack.length;
@@ -175,15 +180,21 @@
 
     Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
 
+    Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', '^', '&', '|', '+', '-', '**', '*', '/', '%', '<<', '>>', '==', '!=', '<=', '>=', '>', '<', '='];
+
+    Token.Symbols = {
+      UnaryMinus: '\u{2212}',
+    };
+
     Token.Types = [
-      { regex: /^(~=|~|&=|\^=|\/=|\^|\&|\||\+|\-|\*\*|\*|\/|%|==|!=|<<|>>|<=|>=|<|>|=)/, type: Token.Type.Operator, name: 'operator' },
-      { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
-      { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
+      { regex: new RegExp(`^(${Token.Operators.map(o => o.replace(/[\|\-\/\*\+\^\$]/g, '\\$&')).join('|')})`), type: Token.Type.Operator, name: 'operator' },
       { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, name: 'binary' },
       { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, name: 'octal' },
       { regex: /^([0-9]+)/, type: Token.Type.Literal, base: 10, name: 'decimal' },
       { regex: /^x([0-9a-fA-F]+)/, type: Token.Type.Literal, base: 16, name: 'hexadecimal' },
       { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, name: 'variable' },
+      { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
+      { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
     ];
 
     const LEFT = 'left';
@@ -211,6 +222,9 @@
                 }
                 break;
               default:
+                if (symbol === '-' && (tokens.length === 0 || tokens.last === Token.Type.LeftParenthesis || (tokens.last in Token.Operators))) {
+                  symbol = Token.Symbols.UnaryMinus;
+                }
                 value = symbol;
                 break;
             }
@@ -280,97 +294,62 @@
       if (result.error) {
         return result;
       }
+      console.log('tokens =', result.tokens);
       if (result.tokens) {
         let s = new Stack();
         const tokens = shuntingYard(result.tokens);
+        console.log('RPN =', tokens._stack);
         for (const t of tokens) {
           if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
             s.push(t);
           }
           else {
-            const bToken = s.pop();
-            const aToken = s.pop();
-            if (aToken instanceof Token && bToken instanceof Token) {
-              let a = (aToken.type === Token.Type.Literal)
-              ? aToken.value
-              : variables[aToken.value];
-              let b = (bToken.type === Token.Type.Literal)
-              ? bToken.value
-              : variables[bToken.value];
-              try {
-                switch (t.value) {
-                  case '=':
-                    variables[aToken.value] = b;
-                  case '+':
-                    s.push(newLiteral(a + b));
-                    break;
-                  case '-':
-                    s.push(newLiteral(a - b));
-                    break;
-                  case '*':
-                    s.push(newLiteral(a * b));
-                    break;
-                  case '**':
-                    s.push(newLiteral(a ** b));
-                    break;
-                  case '/':
-                    s.push(newLiteral(a / b));
-                    break;
-                  case '%':
-                    s.push(newLiteral(a % b));
-                    break;
-                  case '^':
-                    s.push(newLiteral(a ^ b));
-                    break;
-                  case '|':
-                    s.push(newLiteral(a | b));
-                    break;
-                  case '&':
-                    s.push(newLiteral(a & b));
-                    break;
-                  case '<<':
-                    s.push(newLiteral(a << b));
-                    break;
-                  case '>>':
-                    s.push(newLiteral(a >> b));
-                    break;
-                  case '<':
-                    s.push(newLiteral(a < b ? 1n : 0n));
-                    break;
-                  case '>':
-                    s.push(newLiteral(a > b ? 1n : 0n));
-                    break;
-                  case '<=':
-                    s.push(newLiteral(a <= b ? 1n : 0n));
-                    break;
-                  case '>=':
-                    s.push(newLiteral(a >= b ? 1n : 0n));
-                    break;
-                  case '==':
-                    s.push(newLiteral(a == b ? 1n : 0n));
-                    break;
-                  case '!=':
-                    s.push(newLiteral(a != b ? 1n : 0n));
-                    break;
+            if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
+              s.top.value = -s.top.value;
+            }
+            else {
+              const bToken = s.pop();
+              const aToken = s.pop();
+              if (aToken instanceof Token && bToken instanceof Token) {
+                let a = (aToken.type === Token.Type.Literal)
+                  ? aToken.value
+                  : variables[aToken.value];
+                let b = (bToken.type === Token.Type.Literal)
+                  ? bToken.value
+                  : variables[bToken.value];
+                try {
+                  switch (t.value) {
+                    case '=': variables[aToken.value] = b; break;
+                    case '+': s.push(newLiteral(a + b)); break;
+                    case '-': s.push(newLiteral(a - b)); break;
+                    case '*': s.push(newLiteral(a * b)); break;
+                    case '**': s.push(newLiteral(a ** b)); break;
+                    case '/': s.push(newLiteral(a / b)); break;
+                    case '%': s.push(newLiteral(a % b)); break;
+                    case '^': s.push(newLiteral(a ^ b)); break;
+                    case '|': s.push(newLiteral(a | b)); break;
+                    case '&': s.push(newLiteral(a & b)); break;
+                    case '<<': s.push(newLiteral(a << b)); break;
+                    case '>>': s.push(newLiteral(a >> b)); break;
+                    case '<': s.push(newLiteral(a < b ? 1n : 0n)); break;
+                    case '>': s.push(newLiteral(a > b ? 1n : 0n)); break;
+                    case '<=': s.push(newLiteral(a <= b ? 1n : 0n)); break;
+                    case '>=': s.push(newLiteral(a >= b ? 1n : 0n)); break;
+                    case '==': s.push(newLiteral(a == b ? 1n : 0n)); break;
+                    case '!=': s.push(newLiteral(a != b ? 1n : 0n)); break;
+                  }
+                }
+                catch (e) {
+                  console.error(e);
                 }
               }
-              catch (e) {
-                console.error(e);
-              }
-            }
-            else if (bToken instanceof Token) {
-              switch (t.value) {
-                case '-':
-                  s.push(newLiteral(-b.value));
-                  break;
-                case '~':
-                  s.push(newLiteral(~b.value));
-                  break;
+              else if (bToken instanceof Token) {
+                console.log(s, bToken);
               }
             }
           }
         }
-        console.log(variables);
+        console.log('variables =', variables);
         if (s.length === 1) {
           return { result: s.top.value.toString(base) };
         }
@@ -422,17 +401,17 @@
       document.getElementById(`base-${base}`).checked = true;
     }
 
-    let loadResources = () => {
+    let init = () => {
       fetch('token.json')
         .then(res => res.json())
         .then(out => {
           Token.Operator = out;
+          main();
         })
         .catch(err => { throw err });
     };
 
-    loadResources();
-    window.addEventListener('load', main);
+    window.addEventListener('load', init);
   })(window);
 </script>
 
