@@ -4,7 +4,8 @@
 
 Array.prototype.last = () => this[this.length - 1];
 
-const LEFT = -1, RIGHT = 1;
+const LEFT = -1, RIGHT = +1;
+const TRUE = 1n, FALSE = 0n;
 
 class Stack {
   constructor() {
@@ -67,7 +68,7 @@ Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', 
 Token.Symbols = { UnaryMinus: '\u{2212}' };
 
 Token.Operator = {
-  '\u2212': { prec: -3, assoc: RIGHT },
+  '\u2212': { prec: -3, assoc: RIGHT }, // unary minus
   '~': { prec: -3, assoc: RIGHT },
   '**': { prec: -4, assoc: RIGHT },
   '*': { prec: -5, assoc: LEFT },
@@ -86,7 +87,15 @@ Token.Operator = {
   '&': { prec: -11, assoc: LEFT },
   '^': { prec: -12, assoc: LEFT },
   '|': { prec: -13, assoc: LEFT },
-  '=': { prec: -16, assoc: RIGHT }
+  '=': { prec: -16, assoc: RIGHT },
+  '&=': { prec: -16, assoc: RIGHT },
+  '^=': { prec: -16, assoc: RIGHT },
+  '|=': { prec: -16, assoc: RIGHT },
+  '+=': { prec: -16, assoc: RIGHT },
+  '-=': { prec: -16, assoc: RIGHT },
+  '*=': { prec: -16, assoc: RIGHT },
+  '/=': { prec: -16, assoc: RIGHT },
+  '%=': { prec: -16, assoc: RIGHT },
 };
 
 Token.Types = [
@@ -233,12 +242,12 @@ let calculate = expr => {
                 case '&': r = a & b; break;
                 case '<<': r = a << b; break;
                 case '>>': r = a >> b; break;
-                case '<': r = a < b ? 1n : 0n; break;
-                case '>': r = a > b ? 1n : 0n; break;
-                case '<=': r = a <= b ? 1n : 0n; break;
-                case '>=': r = a >= b ? 1n : 0n; break;
-                case '==': r = a == b ? 1n : 0n; break;
-                case '!=': r = a != b ? 1n : 0n; break;
+                case '<': r = a < b ? TRUE : FALSE; break;
+                case '>': r = a > b ? TRUE : FALSE; break;
+                case '<=': r = a <= b ? TRUE : FALSE; break;
+                case '>=': r = a >= b ? TRUE : FALSE; break;
+                case '==': r = a == b ? TRUE : FALSE; break;
+                case '!=': r = a != b ? TRUE : FALSE; break;
                 default: return { error: `unknown operator: ${t.value}` };
               }
             }
