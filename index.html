@@ -1,9 +1,7 @@
 <html>
 
 <head>
-  <title>Arbitrary Precision Calculator</title>
-</head>
-<!--
+  <!--
     Arbitrary Precision Calculator.
     Copyright (C) 2019 Oliver Lau <ola@ct.de>, Heise Medien GmbH & Co. KG
 
@@ -20,428 +18,90 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<style type="text/css">
-  * {
-    margin: 0;
-    padding: 0;
-  }
-
-  html,
-  body {
-    background-color: #e9e7de;
-    color: #222;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 12pt;
-  }
-
-  h1 {
-    font-size: 18pt;
-  }
-
-  a {
-    color: #555;
-    font-weight: bold;
-    text-decoration: none;
-  }
-
-  a:visited {
-    color: #666;
-  }
-
-  a:hover {
-    text-decoration: underline;
-  }
-
-  .app {
-    padding: 5pt;
-  }
-
-  p {
-    margin: 5pt auto;
-  }
-
-  #msg {
-    min-height: 5ex;
-    display: inline-block;
-    font-weight: bold;
-  }
-
-  .error {
-    color: rgb(223, 53, 53);
-  }
-
-  .hide {
-    animation-delay: 1s;
-    animation-duration: 250ms;
-    animation-name: hide;
-    animation-timing-function: ease;
-    animation-fill-mode: forwards;
-  }
-
-  @keyframes hide {
-    from {
-      opacity: 1;
+  <title>Arbitrary Precision Calculator</title>
+  <meta name="author" content="Oliver Lau">
+  <meta name="copyright" content="Oliver Lau, Heise Medien GmbH & Co. KG">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
     }
 
-    to {
-      opacity: 0;
+    html,
+    body {
+      background-color: #e9e7de;
+      color: #222;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12pt;
     }
-  }
 
-  textarea {
-    background-color: white;
-    color: black;
-    font-family: 'Courier New', Courier, monospace;
-    font-size: 12pt;
-    padding: 4pt;
-    width: 100%;
-    height: 20%;
-  }
-</style>
-<script type="text/javascript">
-  (function (window) {
-    'use strict';
-    const Padding = (function (length) {
-      let padding = '';
-      for (let i = 0; i < length; ++i) {
-        padding += '0';
-      }
-      return padding;
-    })(512);
+    h1 {
+      font-size: 18pt;
+    }
 
-    let inEl = null;
-    let outEl = null;
-    let msgEl = null;
-    let baseFormEl = null;
-    let base = localStorage.getItem('base') || 2;
-    let variables = {};
-    let results = [];
+    a {
+      color: #555;
+      font-weight: bold;
+      text-decoration: none;
+    }
 
-    Array.prototype.last = () => this[this.length - 1];
+    a:visited {
+      color: #666;
+    }
 
-    class Stack {
-      constructor() {
-        this._stack = [];
-        this._nextIndex = 0;
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .app {
+      padding: 5pt;
+    }
+
+    p {
+      margin: 5pt auto;
+    }
+
+    #msg {
+      min-height: 5ex;
+      display: inline-block;
+      font-weight: bold;
+    }
+
+    .error {
+      color: rgb(223, 53, 53);
+    }
+
+    .hide {
+      animation-delay: 1s;
+      animation-duration: 250ms;
+      animation-name: hide;
+      animation-timing-function: ease;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes hide {
+      from {
+        opacity: 1;
       }
-      push(value) {
-        this._stack.push(value);
-      }
-      pop() {
-        return this._stack.pop();
-      }
-      get top() {
-        return this._stack[this._stack.length - 1];
-      }
-      set top(v) {
-        this._stack[this._stack.length - 1] = v;
-      }
-      get length() {
-        return this._stack.length;
-      }
-      [Symbol.iterator]() {
-        return {
-          next: () => {
-            if (this._nextIndex < this.length) {
-              return { value: this._stack[this._nextIndex++], done: false };
-            }
-            this._nextIndex = 0;
-            return { done: true };
-          }
-        }
+
+      to {
+        opacity: 0;
       }
     }
 
-    class Token {
-      constructor(type, value) {
-        this._type = type;
-        this._value = value;
-      }
-      get type() {
-        return this._type;
-      }
-      get value() {
-        return this._value;
-      }
-      set type(t) {
-        this._type = t;
-      }
-      set value(v) {
-        this._value = v;
-      }
-      get precedence() {
-        return Token.Operator[this.value].prec;
-      }
-      get associativity() {
-        return Token.Operator[this.value].assoc;
-      }
+    textarea {
+      background-color: white;
+      color: black;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12pt;
+      padding: 4pt;
+      width: 100%;
+      height: 20%;
     }
-
-    Token.Type = (function (types) {
-      let obj = {};
-      for (let i in types) {
-        obj[types[i]] = +i + 1;
-      }
-      return obj;
-    })(['Literal', 'Operator', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
-
-    Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
-
-    Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', '^', '&', '|', '+', '-', '**', '*', '/', '%', '<<', '>>', '==', '!=', '<=', '>=', '>', '<', '='];
-
-    Token.Symbols = {
-      UnaryMinus: '\u{2212}',
-    };
-
-    Token.Types = [
-      { regex: new RegExp(`^(${Token.Operators.map(o => o.replace(/[\|\-\/\*\+\^\$]/g, '\\$&')).join('|')})`), type: Token.Type.Operator, name: 'operator' },
-      { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, name: 'binary' },
-      { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, name: 'octal' },
-      { regex: /^([0-9]+)/, type: Token.Type.Literal, base: 10, name: 'decimal' },
-      { regex: /^x([0-9a-fA-F]+)/, type: Token.Type.Literal, base: 16, name: 'hexadecimal' },
-      { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, name: 'variable' },
-      { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
-      { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
-    ];
-
-    const LEFT = 'left';
-    const RIGHT = 'right';
-
-    let tokenize = str => {
-      let expr = str.replace(/\s+/gm, '');
-      let tokens = [];
-      while (expr.length > 0) {
-        let found = false;
-        for (let i = 0; i < Token.Types.length && !found; ++i) {
-          let t = Token.Types[i];
-          let m = expr.match(t.regex);
-          if (m && m.length > 0) {
-            let symbol = m[1];
-            let len = m[0].length;
-            let value;
-            switch (t.type) {
-              case Token.Type.Literal:
-                try {
-                  value = BigInt(Token.BasePrefix[t.base] + symbol);
-                }
-                catch (e) {
-                  return { error: e };
-                }
-                break;
-              default:
-                if (symbol === '-' && (tokens.length === 0 || tokens.last === Token.Type.LeftParenthesis || (tokens.last in Token.Operators))) {
-                  symbol = Token.Symbols.UnaryMinus;
-                }
-                value = symbol;
-                break;
-            }
-            tokens.push(new Token(t.type, value));
-            expr = expr.substring(len);
-            found = true;
-          }
-        }
-        if (!found) {
-          return { error: `invalid expression: ${str}` };
-        }
-      }
-      return { tokens: tokens };
-    }
-
-    let shuntingYard = tokens => {
-      let ops = new Stack();
-      let queue = new Stack();
-      for (const token of tokens) {
-        switch (token.type) {
-          case Token.Type.Literal:
-          // fall-through
-          case Token.Type.Variable:
-            queue.push(token);
-            break;
-          case Token.Type.Operator:
-            while (ops.top &&
-              (ops.top.type !== Token.Type.LeftParenthesis)
-              &&
-              (
-                (ops.top.precedence > token.precedence)
-                ||
-                (ops.top.precedence === token.precedence && ops.top.associativity === LEFT)
-              )
-            ) {
-              queue.push(ops.pop());
-            }
-            ops.push(token);
-            break;
-          case Token.Type.LeftParenthesis:
-            ops.push(token);
-            break;
-          case Token.Type.RightParenthesis:
-            while (ops.top && ops.top.type !== Token.Type.LeftParenthesis) {
-              queue.push(ops.pop());
-            }
-            if (ops.top.type === Token.Type.LeftParenthesis) {
-              ops.pop();
-            }
-            break;
-          default:
-            break;
-        }
-      }
-      while (ops.length > 0) {
-        queue.push(ops.pop());
-      }
-      return queue;
-    }
-
-    let newLiteral = value => {
-      return new Token(Token.Type.Literal, value);
-    }
-
-    let runAsync = callback => {
-      setTimeout(callback, 0);
-    }
-
-    let calculate = expr => {
-      console.log(`calculate("${expr}")`);
-      let { tokens, error } = tokenize(expr);
-      if (error) {
-        return;
-      }
-      if (tokens) {
-        let s = new Stack();
-        tokens = shuntingYard(tokens);
-        for (const t of tokens) {
-          if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
-            s.push(t);
-          }
-          else {
-            if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
-              s.top.value = -s.top.value;
-            }
-            else {
-              const bToken = s.pop();
-              const aToken = s.pop();
-              if (aToken instanceof Token && bToken instanceof Token) {
-                let a = (aToken.type === Token.Type.Literal)
-                  ? aToken.value
-                  : variables[aToken.value];
-                let b = (bToken.type === Token.Type.Literal)
-                  ? bToken.value
-                  : variables[bToken.value];
-                try {
-                  switch (t.value) {
-                    case '=': variables[aToken.value] = b; break;
-                    case '+': s.push(newLiteral(a + b)); break;
-                    case '-': s.push(newLiteral(a - b)); break;
-                    case '*': s.push(newLiteral(a * b)); break;
-                    case '**': s.push(newLiteral(a ** b)); break;
-                    case '/': s.push(newLiteral(a / b)); break;
-                    case '%': s.push(newLiteral(a % b)); break;
-                    case '^': s.push(newLiteral(a ^ b)); break;
-                    case '|': s.push(newLiteral(a | b)); break;
-                    case '&': s.push(newLiteral(a & b)); break;
-                    case '<<': s.push(newLiteral(a << b)); break;
-                    case '>>': s.push(newLiteral(a >> b)); break;
-                    case '<': s.push(newLiteral(a < b ? 1n : 0n)); break;
-                    case '>': s.push(newLiteral(a > b ? 1n : 0n)); break;
-                    case '<=': s.push(newLiteral(a <= b ? 1n : 0n)); break;
-                    case '>=': s.push(newLiteral(a >= b ? 1n : 0n)); break;
-                    case '==': s.push(newLiteral(a == b ? 1n : 0n)); break;
-                    case '!=': s.push(newLiteral(a != b ? 1n : 0n)); break;
-                  }
-                }
-                catch (e) {
-                  return { error: e };
-                }
-              }
-            }
-          }
-        }
-        if (s.length === 1) {
-          if (s.top.type === Token.Type.Variable) {
-            if (variables.hasOwnProperty(s.top.value)) {
-              return { result: variables[s.top.value] };
-            }
-            else {
-              return { error: `undefined variable '${s.top.value}'` }
-            }
-          }
-          return { result: s.top.value };
-        }
-        else {
-          return { result: undefined };
-        }
-      }
-      return { error: 'invalid expression' };
-    };
-
-    let formulaChanged = event => {
-      const t0 = performance.now();
-      msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
-      msgEl.classList.remove('hide');
-      msgEl.classList.remove('error');
-      results = [];
-      const expressions = inEl.value.split('\n');
-      let errorFound = false;
-      variables = {};
-      for (const expr of expressions) {
-        const { result, error } = calculate(expr);
-        if (error) {
-          msgEl.innerHTML = error;
-          msgEl.classList.add('error');
-          errorFound = true;
-          break;
-        }
-        else if (typeof result === 'bigint') {
-          results.push(result);
-        }
-        else {
-          msgEl.innerHTML = '';
-        }
-      }
-      if (!errorFound) {
-        runAsync(() => {
-          const dt = 1e-3 * (performance.now() - t0);
-          msgEl.innerHTML = `Calculation took ${dt.toFixed(4)} seconds`;
-          msgEl.classList.add('hide');
-          displayResults();
-        });
-      }
-    };
-
-    let displayResults = () => {
-      console.log('displayResults()');
-      outEl.value = results.map(result => result.toString(base)).join('\n');
-    };
-
-    let baseChanged = event => {
-      base = parseInt(event.target.value);
-      localStorage.setItem('base', base);
-      displayResults();
-    };
-
-    let main = operatorMap => {
-      Token.Operator = operatorMap;
-      inEl = document.getElementById('input');
-      inEl.addEventListener('input', formulaChanged);
-      outEl = document.getElementById('output');
-      msgEl = document.getElementById('msg');
-      baseFormEl = document.getElementById('base-form');
-      baseFormEl.addEventListener('change', baseChanged);
-      document.getElementById(`base-${base}`).checked = true;
-    }
-
-    let init = () => {
-      fetch('token.json')
-        .then(res => res.json())
-        .then(operators => {
-          main(operators);
-        })
-        .catch(err => { throw err });
-    };
-
-    window.addEventListener('load', init);
-  })(window);
-</script>
+  </style>
+  <script type="text/javascript" src="calc.js" defer async></script>
+</head>
 
 <body>
   <div class="app">
@@ -464,7 +124,7 @@
     <p><span id="msg"></span></p>
     <hr style="margin-top: 29pt; margin-bottom: 7pt;" />
     <dp><span style="font-size: smaller">
-        <strong>Arbitrary Precision Calculator</strong> v0.3-EXPERIMENTAL &ndash;
+        <strong>Arbitrary Precision Calculator</strong> v0.4-EXPERIMENTAL &ndash;
         Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, <a
           href="https://www.heise-gruppe.de/heise-medien.html" target="_blank">Heise Medien GmbH & Co. KG</a>, <a
           href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
