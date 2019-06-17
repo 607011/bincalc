@@ -1,0 +1,96 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background-color: #e9e7de;
+  color: #222;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12pt;
+}
+
+h1 {
+  font-size: 18pt;
+}
+
+a {
+  color: #555;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+a:visited {
+  color: #666;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.app {
+  padding: 5pt;
+}
+
+p {
+  margin: 5pt auto;
+}
+
+#msg {
+  min-height: 5ex;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.error {
+  color: rgb(223, 53, 53);
+}
+
+.hide {
+  animation-delay: 1s;
+  animation-duration: 250ms;
+  animation-name: hide;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+}
+
+th {
+  text-align: left;
+}
+
+td:first-child {
+  padding-right: 1em;
+}
+
+tbody > tr > td:first-child {
+  text-align: right;
+}
+
+tfoot > tr > td {
+  padding-top: 2ex;
+}
+
+tfoot td {
+  font-size: smaller;
+}
+
+@keyframes hide {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+textarea {
+  background-color: white;
+  color: black;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12pt;
+  padding: 4pt;
+  width: 100%;
+  height: 20%;
+}
