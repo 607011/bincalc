@@ -270,6 +270,7 @@ onmessage = event => {
   const expressions = event.data;
   let errorFound = false;
   let results = [];
+  variables = {};
   for (const expr of expressions) {
     const { result, error } = calculate(expr);
     if (error) {
