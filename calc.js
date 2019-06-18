@@ -10,7 +10,7 @@
   let base = localStorage.getItem('base') || 2;
   let results = [];
   let numberCruncher = null;
-  let helpEl = null;
+  let overlayEl = null;
 
   let formulaChanged = () => {
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
@@ -46,19 +46,25 @@
     }
   };
 
-  let helpKeyDown = event => {
+  let overlayKeyDown = event => {
     if (event.key === 'Escape') {
-      helpEl.classList.add('hidden');
+      overlayEl.classList.add('hidden');
     }
   };
 
   let init = () => {
+    overlayEl = document.getElementById('overlay');
     try {
       let x = BigInt(0);
     }
     catch (e) {
-      console.error('No BigInt support.');
-      // TODO: show error message to user
+      fetch('unsupported.html')
+      .then(response => {
+        response.body.getReader().read().then(html => {
+          overlayEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
+          overlayEl.classList.remove('hidden');
+        });
+      });
       return;
     }
     inEl = document.getElementById('input');
@@ -68,25 +74,24 @@
     baseFormEl = document.getElementById('base-form');
     baseFormEl.addEventListener('change', baseChanged);
     document.getElementById(`base-${base}`).checked = true;
-    helpEl = document.getElementById('help');
     numberCruncher = new Worker('numbercruncher.js');
     numberCruncher.onmessage = numberCruncherReady;
     fetch('help.html')
       .then(response => {
         response.body.getReader().read().then(html => {
-          helpEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
+          overlayEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
         });
         document.getElementById('help-button').addEventListener('click', () => {
-          if (helpEl.classList.contains('hidden')) {
-            helpEl.classList.remove('hidden');
+          if (overlayEl.classList.contains('hidden')) {
+            overlayEl.classList.remove('hidden');
             document.getElementById('help-back').addEventListener('click', () => {
-              helpEl.classList.add('hidden');
-              window.removeEventListener('keydown', helpKeyDown, {once: true, capture: true});
+              overlayEl.classList.add('hidden');
+              window.removeEventListener('keydown', overlayKeyDown, {once: true, capture: true});
             }, {once: true, capture: true});
-            window.addEventListener('keydown', helpKeyDown, {once: true, capture: true});
+            window.addEventListener('keydown', overlayKeyDown, {once: true, capture: true});
           }
           else {
-            helpEl.classList.add('hidden');
+            overlayEl.classList.add('hidden');
           }
         });
       });
