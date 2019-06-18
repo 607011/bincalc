@@ -7,7 +7,7 @@ html,
 body {
   background-color: #e9e7de;
   color: #222;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Saira Semi Condensed', sans-serif;
   font-size: 12pt;
 }
 
@@ -35,9 +35,16 @@ a:hover {
 }
 
 #help {
-  position: absolute;
-  border: 1px solid #333;
-  background-color: white;
+  position: fixed;
+  text-align: center;
+  width: 100%;
+  height: 100%; 
+  top: 0; 
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  z-index: 2;
 }
 
 #help-button {
@@ -103,7 +110,7 @@ tfoot td {
 textarea {
   background-color: white;
   color: black;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: 'Roboto Mono', monospace;
   font-size: 12pt;
   padding: 4pt;
   width: 100%;
