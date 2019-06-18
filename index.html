@@ -30,7 +30,7 @@
 <body>
   <div class="app">
     <div id="help" class="hidden"></div>
-    <h1>Arbitrary Precision Calculator</h1>
+    <h1>Arbitrary Precision Calculator <span style="float: right"><a href="#" id="help-button">❓</a></span></h1>
     <p><textarea id="input"
         placeholder="type formula here, e.g. 'b1001 ^ x0f' to XOR a binary with a hexadecimal value"></textarea></p>
     <p><textarea id="output" readonly placeholder="result will be displayed here"></textarea></p>
@@ -50,14 +50,10 @@
     <hr style="margin-top: 29pt; margin-bottom: 7pt;" />
     <dp><span style="font-size: smaller">
         <a href="https://github.com/ola-ct/bincalc" target="_blank"><strong>Arbitrary Precision Calculator</strong></a>
-        v0.4-EXPERIMENTAL &ndash;
+        v0.5-EXPERIMENTAL &ndash;
         Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, <a
           href="https://www.heise-gruppe.de/heise-medien.html" target="_blank">Heise Medien GmbH & Co. KG</a>, <a
           href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
-      <p><span style="font-size: smaller"><em>(Uses <a
-              href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt"
-              target="_blank">BigInt</a>, therefore Chrome &ge;67, Firefox &ge;68 or Opera &ge;54 are
-            needed.)</em> – <a href="#" id="help-button">Help</a></span></p>
   </div>
 </body>
 

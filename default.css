@@ -40,6 +40,10 @@ a:hover {
   background-color: white;
 }
 
+#help-button {
+  font-size: smaller;
+}
+
 p {
   margin: 5pt auto;
 }

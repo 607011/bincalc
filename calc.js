@@ -53,6 +53,14 @@
   };
 
   let init = () => {
+    try {
+      let x = BigInt(0);
+    }
+    catch (e) {
+      console.error('No BigInt support.');
+      // TODO: show error message to user
+      return;
+    }
     inEl = document.getElementById('input');
     inEl.addEventListener('input', formulaChanged);
     outEl = document.getElementById('output');
