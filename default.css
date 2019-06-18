@@ -46,6 +46,14 @@ a:hover {
   z-index: 2;
 }
 
+input[type="radio"] {
+  margin-right: 0.2em;
+}
+
+input[type="radio"] + label {
+  margin-right: 1em;
+}
+
 #help-button {
   font-size: smaller;
 }
@@ -68,16 +76,16 @@ p {
   display: none;
 }
 
+.show {
+  display: block;
+}
+
 .hide {
   animation-delay: 3s;
   animation-duration: 340ms;
   animation-name: hide;
   animation-timing-function: ease;
   animation-fill-mode: forwards;
-}
-
-.show {
-  display: block;
 }
 
 th {
@@ -100,13 +108,12 @@ tfoot td {
   from {
     opacity: 1;
   }
-
   to {
     opacity: 0;
   }
 }
 
-textarea {
+#output, textarea {
   background-color: white;
   color: black;
   font-family: 'Roboto Mono', monospace;
@@ -114,4 +121,11 @@ textarea {
   padding: 4pt;
   width: 100%;
   height: 30%;
+  border: 1px solid #444;
+}
+
+#output {
+  word-break: break-all;
+  overflow-y: auto;
+  width: auto;
 }

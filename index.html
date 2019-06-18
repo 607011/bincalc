@@ -34,16 +34,16 @@
     <h1>Arbitrary Precision Calculator <span style="float: right"><a href="#" id="help-button">❓</a></span></h1>
     <p><textarea id="input"
         placeholder="type formula here, e.g. 'b1001 ^ x0f' to XOR a binary with a hexadecimal value"></textarea></p>
-    <p><textarea id="output" readonly placeholder="results will be displayed here"></textarea></p>
+    <p><div id="output"></div></p>
     <p>
       <form id="base-form">
-        <input id="base-2" name="base" type="radio" value="2"></option>
+        <input id="base-2" name="base" type="radio" value="2"></input>
         <label for="base-2">binary</label>
-        <input id="base-8" name="base" type="radio" value="8"></option>
+        <input id="base-8" name="base" type="radio" value="8"></input>
         <label for="base-8">octal</label>
-        <input id="base-10" name="base" type="radio" value="10"></option>
+        <input id="base-10" name="base" type="radio" value="10"></input>
         <label for="base-10">decimal</label>
-        <input id="base-16" name="base" type="radio" value="16"></option>
+        <input id="base-16" name="base" type="radio" value="16"></input>
         <label for="base-16">hexadecimal</label>
       </form>
     </p>

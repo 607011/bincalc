@@ -12,6 +12,7 @@
   let numberCruncher = null;
   let overlayEl = null;
   let t0 = 0;
+  let isCalculating = false;
 
   let formulaChanged = () => {
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
@@ -19,21 +20,18 @@
     msgEl.classList.remove('error');
     const expressions = inEl.value.split('\n');
     t0 = performance.now();
+    isCalculating = true;
     numberCruncher.postMessage(expressions);
-  };
-
-  let displayResults = () => {
-    outEl.value = results.map(result => result.toString(base)).join('\n');
   };
 
   let baseChanged = event => {
     base = parseInt(event.target.value);
     localStorage.setItem('base', base);
-    displayResults();
+    outEl.innerText = results.map(result => result.toString(base)).join('\n');
   };
 
   let numberCruncherReady = msg => {
-    console.debug(msg);
+    isCalculating = false;
     if (msg.data.error) {
       msgEl.innerHTML = msg.data.error;
       msgEl.classList.add('error');
@@ -41,11 +39,13 @@
     else {
       msgEl.innerHTML = '';
       results = msg.data.results;
-      let dtPost = 1e-3 * (performance.now() - t0);
+      const dtPost = 1e-3 * (performance.now() - t0);
       if (results && results.length > 0) {
-        displayResults();
-        let dtRender = 1e-3 * (performance.now() - t0);
-        msgEl.innerHTML = `Calculation took ${msg.data.dt.toFixed(4)} seconds, ${dtPost.toFixed(4)} seconds to transfer, ${dtRender.toFixed(4)} seconds to render`;
+        const t0Render = performance.now();
+        const textResult = results.map(result => result.toString(base)).join('\n');
+        outEl.innerText = textResult;
+        const dtRender = 1e-3 * (performance.now() - t0Render);
+        msgEl.innerHTML = `${msg.data.dt.toFixed(4)} seconds to calculate, ${dtPost.toFixed(4)} seconds to transfer, ${dtRender.toFixed(4)} seconds to convert to base ${base}.`;
         msgEl.classList.add('hide');
       }
     }
@@ -54,6 +54,15 @@
   let overlayKeyDown = event => {
     if (event.key === 'Escape') {
       overlayEl.classList.add('hidden');
+    }
+  };
+
+  let terminateWorker = () => {
+    if (isCalculating) {
+      isCalculating = false;
+      numberCruncher.terminate();
+      numberCruncher = new Worker('numbercruncher.js');
+      msgEl.classList.add('hide');
     }
   };
 
@@ -91,14 +100,20 @@
     outEl = document.getElementById('output');
     msgEl = document.getElementById('msg');
     baseFormEl = document.getElementById('base-form');
-    baseFormEl.addEventListener('change', baseChanged);
     document.getElementById(`base-${base}`).checked = true;
+    baseFormEl.addEventListener('change', baseChanged);
     numberCruncher = new Worker('numbercruncher.js');
     numberCruncher.onmessage = numberCruncherReady;
     window.addEventListener('keyup', event => {
-      if (event.key === 'F1') {
-        toggleHelp();
+      switch (event.key) {
+        case 'F1':
+          toggleHelp();
+          break;
+        case 'Escape':
+          terminateWorker();
+          break;
       }
+
     });
     fetch('help.html')
       .then(response => {
