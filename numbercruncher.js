@@ -231,6 +231,13 @@ let calculate = expr => {
             try {
               switch (t.value) {
                 case '=': variables[aToken.value] = b; break;
+                case '+=': variables[aToken.value] = a + b; break;
+                case '-=': variables[aToken.value] = a - b; break;
+                case '/=': variables[aToken.value] = a / b; break;
+                case '%=': variables[aToken.value] = a % b; break;
+                case '*=': variables[aToken.value] = a * b; break;
+                case '<<=': variables[aToken.value] = a << b; break;
+                case '>>=': variables[aToken.value] = a >> b; break;
                 case '+': r = a + b; break;
                 case '-': r = a - b; break;
                 case '*': r = a * b; break;
