@@ -52,6 +52,20 @@
     }
   };
 
+  let toggleHelp = () => {
+    if (overlayEl.classList.contains('hidden')) {
+      overlayEl.classList.remove('hidden');
+      document.getElementById('help-back').addEventListener('click', () => {
+        overlayEl.classList.add('hidden');
+        window.removeEventListener('keydown', overlayKeyDown, {once: true, capture: true});
+      }, {once: true, capture: true});
+      window.addEventListener('keydown', overlayKeyDown, {once: true, capture: true});
+    }
+    else {
+      overlayEl.classList.add('hidden');
+    }
+  };
+
   let init = () => {
     overlayEl = document.getElementById('overlay');
     try {
@@ -76,24 +90,17 @@
     document.getElementById(`base-${base}`).checked = true;
     numberCruncher = new Worker('numbercruncher.js');
     numberCruncher.onmessage = numberCruncherReady;
+    window.addEventListener('keyup', event => {
+      if (event.key === 'F1') {
+        toggleHelp();
+      }
+    });
     fetch('help.html')
       .then(response => {
         response.body.getReader().read().then(html => {
           overlayEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
         });
-        document.getElementById('help-button').addEventListener('click', () => {
-          if (overlayEl.classList.contains('hidden')) {
-            overlayEl.classList.remove('hidden');
-            document.getElementById('help-back').addEventListener('click', () => {
-              overlayEl.classList.add('hidden');
-              window.removeEventListener('keydown', overlayKeyDown, {once: true, capture: true});
-            }, {once: true, capture: true});
-            window.addEventListener('keydown', overlayKeyDown, {once: true, capture: true});
-          }
-          else {
-            overlayEl.classList.add('hidden');
-          }
-        });
+        document.getElementById('help-button').addEventListener('click', toggleHelp);
       });
   };
 
