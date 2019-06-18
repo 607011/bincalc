@@ -46,9 +46,13 @@
     }
   };
 
+  let helpKeyDown = event => {
+    if (event.key === 'Escape') {
+      helpEl.classList.add('hidden');
+    }
+  };
+
   let init = () => {
-    numberCruncher = new Worker('numbercruncher.js');
-    numberCruncher.onmessage = numberCruncherReady;
     inEl = document.getElementById('input');
     inEl.addEventListener('input', formulaChanged);
     outEl = document.getElementById('output');
@@ -57,23 +61,27 @@
     baseFormEl.addEventListener('change', baseChanged);
     document.getElementById(`base-${base}`).checked = true;
     helpEl = document.getElementById('help');
+    numberCruncher = new Worker('numbercruncher.js');
+    numberCruncher.onmessage = numberCruncherReady;
     fetch('help.html')
-    .then(response => {
-      response.body.getReader().read().then(html => {
-        helpEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
+      .then(response => {
+        response.body.getReader().read().then(html => {
+          helpEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
+        });
+        document.getElementById('help-button').addEventListener('click', () => {
+          if (helpEl.classList.contains('hidden')) {
+            helpEl.classList.remove('hidden');
+            document.getElementById('help-back').addEventListener('click', () => {
+              helpEl.classList.add('hidden');
+              window.removeEventListener('keydown', helpKeyDown, {once: true, capture: true});
+            }, {once: true, capture: true});
+            window.addEventListener('keydown', helpKeyDown, {once: true, capture: true});
+          }
+          else {
+            helpEl.classList.add('hidden');
+          }
+        });
       });
-    })
-    .then(() => {
-      document.getElementById('help-button').addEventListener('click', () => {
-        if (helpEl.classList.contains('hidden')) {
-          helpEl.classList.remove('hidden');
-        }
-        else {
-          helpEl.classList.add('hidden');
-        }
-      });
-    });
-
   };
 
   window.addEventListener('load', init);
