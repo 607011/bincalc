@@ -69,8 +69,8 @@ p {
 }
 
 .hide {
-  animation-delay: 1s;
-  animation-duration: 250ms;
+  animation-delay: 3s;
+  animation-duration: 340ms;
   animation-name: hide;
   animation-timing-function: ease;
   animation-fill-mode: forwards;

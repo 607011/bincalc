@@ -11,12 +11,14 @@
   let results = [];
   let numberCruncher = null;
   let overlayEl = null;
+  let t0 = 0;
 
   let formulaChanged = () => {
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
     msgEl.classList.remove('hide');
     msgEl.classList.remove('error');
     const expressions = inEl.value.split('\n');
+    t0 = performance.now();
     numberCruncher.postMessage(expressions);
   };
 
@@ -31,6 +33,7 @@
   };
 
   let numberCruncherReady = msg => {
+    console.debug(msg);
     if (msg.data.error) {
       msgEl.innerHTML = msg.data.error;
       msgEl.classList.add('error');
@@ -38,11 +41,13 @@
     else {
       msgEl.innerHTML = '';
       results = msg.data.results;
+      let dtPost = 1e-3 * (performance.now() - t0);
       if (results && results.length > 0) {
-        msgEl.innerHTML = `Calculation took ${msg.data.dt.toFixed(4)} seconds`;
+        displayResults();
+        let dtRender = 1e-3 * (performance.now() - t0);
+        msgEl.innerHTML = `Calculation took ${msg.data.dt.toFixed(4)} seconds, ${dtPost.toFixed(4)} seconds to transfer, ${dtRender.toFixed(4)} seconds to render`;
         msgEl.classList.add('hide');
       }
-      displayResults();
     }
   };
 

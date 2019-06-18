@@ -238,6 +238,9 @@ let calculate = expr => {
                 case '*=': variables[aToken.value] = a * b; break;
                 case '<<=': variables[aToken.value] = a << b; break;
                 case '>>=': variables[aToken.value] = a >> b; break;
+                case '&=': variables[aToken.value] = a & b; break;
+                case '|=': variables[aToken.value] = a | b; break;
+                case '^=': variables[aToken.value] = a ^ b; break;
                 case '+': r = a + b; break;
                 case '-': r = a - b; break;
                 case '*': r = a * b; break;
@@ -287,7 +290,7 @@ let calculate = expr => {
 };
 
 onmessage = event => {
-  const t0 = performance.now();
+  let t0 = performance.now();
   const expressions = event.data;
   let errorFound = false;
   let results = [];
@@ -306,7 +309,7 @@ onmessage = event => {
   if (!errorFound) {
     postMessage({
       results: results,
-      dt: 1e-3 * (performance.now() - t0),
+      dt: performance.now() - t0,
     });
   }
 }
