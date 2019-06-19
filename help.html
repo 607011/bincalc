@@ -9,140 +9,174 @@
       You can also assign values to variables like in <code>a = 2**128</code>.
       Choose numeral system to display results in below the output pane.
     </p>
-    <table>
-      <thead>
-        <tr>
-          <th>Operator</th>
-          <th>Meaning</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td><code>-</code></td>
-          <td>unary minus</td>
-        </tr>
-        <tr>
-          <td><code>~</code></td>
-          <td>bitwise NOT</td>
-        </tr>
-        <tr>
-          <td><code>**</code></td>
-          <td>power</td>
-        </tr>
-        <tr>
-          <td><code>*</code></td>
-          <td>multiplication</td>
-        </tr>
-        <tr>
-          <td><code>/</code></td>
-          <td>division</td>
-        </tr>
-        <tr>
-          <td><code>%</code></td>
-          <td>remainder</td>
-        </tr>
-        <tr>
-          <td><code>+</code></td>
-          <td>sum</td>
-        </tr>
-        <tr>
-          <td><code>-</code></td>
-          <td>difference</td>
-        </tr>
-        <tr>
-          <td><code>&lt;&lt;</code></td>
-          <td>bitwise shift left</td>
-        </tr>
-        <tr>
-          <td><code>&gt;&gt;</code></td>
-          <td>bitwise shift right</td>
-        </tr>
-        <tr>
-          <td><code>&lt;</code></td>
-          <td>less than</td>
-        </tr>
-        <tr>
-          <td><code>&gt;</code></td>
-          <td>greater than</td>
-        </tr>
-        <tr>
-          <td><code>&le;</code></td>
-          <td>less or equal</td>
-        </tr>
-        <tr>
-          <td><code>&ge;</code></td>
-          <td>greater or equal</td>
-        </tr>
-        <tr>
-          <td><code>==</code></td>
-          <td>equal</td>
-        </tr>
-        <tr>
-          <td><code>!=</code></td>
-          <td>not equal</td>
-        </tr>
-        <tr>
-          <td><code>&</code></td>
-          <td>bitwise AND</td>
-        </tr>
-        <tr>
-          <td><code>|</code></td>
-          <td>bitwise OR</td>
-        </tr>
-        <tr>
-          <td><code>^</code></td>
-          <td>bitwise XOR</td>
-        </tr>
-        <tr>
-          <td><code>=</code></td>
-          <td>assignment</td>
-        </tr>
-        <tr>
-          <td><code>&=</code></td>
-          <td>compound assignment by bitwise AND</td>
-        </tr>
-        <tr>
-          <td><code>|=</code></td>
-          <td>compound assignment by bitwise OR</td>
-        </tr>
-        <tr>
-          <td><code>^=</code></td>
-          <td>compound assignment by bitwise XOR</td>
-        </tr>
-        <tr>
-          <td><code>/=</code></td>
-          <td>compound assignment by division</td>
-        </tr>
-        <tr>
-          <td><code>*=</code></td>
-          <td>compound assignment by multiplication</td>
-        </tr>
-        <tr>
-          <td><code>%=</code></td>
-          <td>compound assignment by remainder</td>
-        </tr>
-        <tr>
-          <td><code>+=</code></td>
-          <td>compound assignment by sum</td>
-        </tr>
-        <tr>
-          <td><code>-=</code></td>
-          <td>compound assignment by difference</td>
-        </tr>
-        <tr>
-          <td><code>&lt;&lt;=</code></td>
-          <td>compound assignment by bitwise shift left</td>
-        </tr>
-        <tr>
-          <td><code>&gt;&gt;=</code></td>
-          <td>compound assignment by bitwise shift right</td>
-        </tr>
-      </tbody>
-      <tfoot>
-        <tr>
-          <td colspan="2">highest precedence first; use parentheses to modify precedence</td>
-        </tr>
-      </tfoot>
-    </table>
+    <div style="display: flex; flex-direction: row; flex-wrap: wrap">
+      <table>
+        <caption>Operators</caption>
+        <thead>
+          <tr>
+            <th>Operator</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>-</code></td>
+            <td>unary minus</td>
+          </tr>
+          <tr>
+            <td><code>~</code></td>
+            <td>bitwise NOT</td>
+          </tr>
+          <tr>
+            <td><code>**</code></td>
+            <td>power</td>
+          </tr>
+          <tr>
+            <td><code>*</code></td>
+            <td>multiplication</td>
+          </tr>
+          <tr>
+            <td><code>/</code></td>
+            <td>division</td>
+          </tr>
+          <tr>
+            <td><code>%</code></td>
+            <td>remainder</td>
+          </tr>
+          <tr>
+            <td><code>+</code></td>
+            <td>sum</td>
+          </tr>
+          <tr>
+            <td><code>-</code></td>
+            <td>difference</td>
+          </tr>
+          <tr>
+            <td><code>&lt;&lt;</code></td>
+            <td>bitwise shift left</td>
+          </tr>
+          <tr>
+            <td><code>&gt;&gt;</code></td>
+            <td>bitwise shift right</td>
+          </tr>
+          <tr>
+            <td><code>&lt;</code></td>
+            <td>less than</td>
+          </tr>
+          <tr>
+            <td><code>&gt;</code></td>
+            <td>greater than</td>
+          </tr>
+          <tr>
+            <td><code>&le;</code></td>
+            <td>less or equal</td>
+          </tr>
+          <tr>
+            <td><code>&ge;</code></td>
+            <td>greater or equal</td>
+          </tr>
+          <tr>
+            <td><code>==</code></td>
+            <td>equal</td>
+          </tr>
+          <tr>
+            <td><code>!=</code></td>
+            <td>not equal</td>
+          </tr>
+          <tr>
+            <td><code>&</code></td>
+            <td>bitwise AND</td>
+          </tr>
+          <tr>
+            <td><code>|</code></td>
+            <td>bitwise OR</td>
+          </tr>
+          <tr>
+            <td><code>^</code></td>
+            <td>bitwise XOR</td>
+          </tr>
+          <tr>
+            <td><code>=</code></td>
+            <td>assignment</td>
+          </tr>
+          <tr>
+            <td><code>&=</code></td>
+            <td>compound assignment by bitwise AND</td>
+          </tr>
+          <tr>
+            <td><code>|=</code></td>
+            <td>compound assignment by bitwise OR</td>
+          </tr>
+          <tr>
+            <td><code>^=</code></td>
+            <td>compound assignment by bitwise XOR</td>
+          </tr>
+          <tr>
+            <td><code>/=</code></td>
+            <td>compound assignment by division</td>
+          </tr>
+          <tr>
+            <td><code>*=</code></td>
+            <td>compound assignment by multiplication</td>
+          </tr>
+          <tr>
+            <td><code>%=</code></td>
+            <td>compound assignment by remainder</td>
+          </tr>
+          <tr>
+            <td><code>+=</code></td>
+            <td>compound assignment by sum</td>
+          </tr>
+          <tr>
+            <td><code>-=</code></td>
+            <td>compound assignment by difference</td>
+          </tr>
+          <tr>
+            <td><code>&lt;&lt;=</code></td>
+            <td>compound assignment by bitwise shift left</td>
+          </tr>
+          <tr>
+            <td><code>&gt;&gt;=</code></td>
+            <td>compound assignment by bitwise shift right</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2">highest precedence first; use parentheses to modify precedence</td>
+          </tr>
+        </tfoot>
+      </table>
+      <table>
+        <caption>Functions</caption>
+        <thead>
+          <tr>
+            <th>Function</th>
+            <th>Meaning</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>gcd(a, b)</code></td>
+            <td>greatest common divisor</td>
+          </tr>
+          <tr>
+            <td><code>lcm(a, b)</code></td>
+            <td>least common multiple</td>
+          </tr>
+          <tr>
+            <td><code>sqrt(a)</code></td>
+            <td>square root</td>
+          </tr>
+          <tr>
+            <td><code>max(a, b)</code></td>
+            <td>maximum</td>
+          </tr>
+          <tr>
+            <td><code>min(a, b)</code></td>
+            <td>minimum</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>

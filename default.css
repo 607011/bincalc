@@ -97,16 +97,31 @@ p {
   animation-fill-mode: forwards;
 }
 
+table {
+  margin: 12pt 12pt 8pt 0;
+}
+
+table, td, th {
+  border-collapse: collapse;
+}
+
+table > caption {
+  font-size: 12pt;
+  font-weight: bold;
+  text-align: left;
+  border: 1px solid #333;
+  color: #eee;
+  background-color: #333;
+  padding-left: 0.2em;
+}
+
+td, th {
+  border: 1px solid #333;
+  padding: 0.2ex 0.4em 0.2ex 0.2em;
+}
+
 th {
   text-align: left;
-}
-
-tfoot > tr > td {
-  padding-top: 2ex;
-}
-
-table {
-  margin: 12pt;
 }
 
 tfoot td {

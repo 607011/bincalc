@@ -53,9 +53,9 @@ class Token {
   get associativity() { return Token.Operator[this.value].assoc; }
 }
 
-Token.Type = (function (types) {
+Token.Type = (types => {
   let obj = {};
-  for (let i in types) {
+  for (const i in types) {
     obj[types[i]] = +i + 1;
   }
   return obj;
@@ -63,65 +63,67 @@ Token.Type = (function (types) {
 
 Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
 
-Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', '^', '&', '|', '+', '-', '**', '*', '/', '%', '<<', '>>', '==', '!=', '<=', '>=', '>', '<', '='];
+Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', '^', '&', '|', '+', '-', '**', '*', '/', '%', '<<', '>>', '==', '!=', '<=', '>=', '>', '<', '=', ','];
 
 Token.Symbols = { UnaryMinus: '\u{2212}' };
 
 Token.Functions = {
   max: {
-    f: (a, b) => a < b ? b : a,
+    f: (...[a, b]) => a > b ? a : b,
     n: 2
   },
   min: {
-    f: (a, b) => a > b ? b : a,
+    f: (...[a, b]) => a < b ? a : b,
     n: 2
   },
   gcd: {
-    f: (a, b) => {
+    f: (...[a, b]) => {
       if (a === 0n || b === 0n) {
         return 0n;
       }
       while (b !== 0n) {
-        const h = a % b;
-        a = b;
-        b = h;
+        [a, b] = [b, a % b];
       }
       return a;
     },
     n: 2
   },
   lcm: {
-    f: (a, b) => {
+    f: (...[a, b]) => {
       if (a === 0n || b === 0n) {
         return 0n;
       }
-      return a * b / Token.Functions.gcd(a, b);
+      return a * b / Token.Functions.gcd.f(a, b);
     },
     n: 2
   },
+  sign: {
+    f: (...[a]) => a < 0n ? -1n : 1n,
+    n: 1
+  },
   sqrt: {
-    f: n => {
-      if (n < 0) {
+    f: (...[n]) => {
+      if (n < 0n) {
         throw 'cannot calculate square root of negative numbers';
       }
-      else if (n < 2) {
+      else if (n < 2n) {
         return n;
       }
-      let shift = 2;
+      let shift = 2n;
       let nShifted = n >> shift;
       while (nShifted !== 0n && nShifted !== n) {
-        shift += 2;
+        shift += 2n;
         nShifted = n >> shift;
       }
-      shift -= 2;
+      shift -= 2n;
       let result = 0n;
       while (shift >= 0n) {
-        result <<= 1;
-        let candidateResult = result + 1n;
+        result <<= 1n;
+        const candidateResult = result + 1n;
         if ((candidateResult * candidateResult) <= (n >> shift)) {
           result = candidateResult;
         }
-        shift -= 2;
+        shift -= 2n;
       }
       return result;
     },
@@ -162,7 +164,7 @@ Token.Operator = {
 };
 
 Object.keys(Token.Functions).forEach(f => {
-  Token.Operator[f] = { prec: -1, assoc: RIGHT};
+  Token.Operator[f] = { prec: -1, assoc: RIGHT };
 });
 
 Token.Types = [
@@ -176,6 +178,7 @@ Token.Types = [
   { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
   { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
 ];
+
 
 let variables = {};
 let results = [];
@@ -231,6 +234,8 @@ let shuntingYard = tokens => {
       case Token.Type.Variable:
         queue.push(token);
         break;
+      case Token.Type.Function:
+      // TODO
       case Token.Type.Operator:
         while (ops.top &&
           (ops.top.type !== Token.Type.LeftParenthesis)
@@ -243,7 +248,9 @@ let shuntingYard = tokens => {
         ) {
           queue.push(ops.pop());
         }
-        ops.push(token);
+        if (token.value !== ',') {
+          ops.push(token);
+        }
         break;
       case Token.Type.LeftParenthesis:
         ops.push(token);
@@ -272,68 +279,88 @@ let calculate = expr => {
     return { error: error };
   }
   if (tokens) {
-    let s = new Stack();
-    for (const t of shuntingYard(tokens)) {
+    const s = new Stack();
+    const rpnTokens = shuntingYard(tokens);
+    for (const t of rpnTokens) {
       if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
         s.push(t);
       }
-      else {
-        if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
-          s.top.value = -s.top.value;
+      else if (t.type === Token.Type.Function) {
+        const n = Token.Functions[t.value].n;
+        const f = Token.Functions[t.value].f;
+        if (s.length < n) {
+          return { result: undefined };
         }
-        else {
-          const bToken = s.pop();
-          const aToken = s.pop();
-          if (aToken instanceof Token && bToken instanceof Token) {
-            if (bToken.type === Token.Type.Variable && !variables.hasOwnProperty(bToken.value)) {
-              return { error: `undefined variable '${bToken.value}'` };
+        const args = (function(s, n) {
+          let args = [];
+          for (let i = 0; i < n; ++i) {
+            args.push(s.pop().value);
+          }
+          return args.reverse();
+        })(s, n);
+        try {
+          s.push(new Token(Token.Type.Literal, f(...args)));
+        }
+        catch (e) {
+          return { error: e.message };
+        }
+      }
+      else if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
+        s.top.value = -s.top.value;
+      }
+      else {
+        const bToken = s.pop();
+        const aToken = s.pop();
+        if (aToken instanceof Token && bToken instanceof Token) {
+          if (bToken.type === Token.Type.Variable && !variables.hasOwnProperty(bToken.value)) {
+            return { error: `undefined variable '${bToken.value}'` };
+          }
+          let a = (aToken.type === Token.Type.Literal)
+            ? aToken.value
+            : variables[aToken.value];
+          let b = (bToken.type === Token.Type.Literal)
+            ? bToken.value
+            : variables[bToken.value];
+          let r;
+          try {
+            switch (t.value) {
+              case '=': variables[aToken.value] = b; break;
+              case '+=': variables[aToken.value] = a + b; break;
+              case '-=': variables[aToken.value] = a - b; break;
+              case '/=': variables[aToken.value] = a / b; break;
+              case '%=': variables[aToken.value] = a % b; break;
+              case '*=': variables[aToken.value] = a * b; break;
+              case '<<=': variables[aToken.value] = a << b; break;
+              case '>>=': variables[aToken.value] = a >> b; break;
+              case '&=': variables[aToken.value] = a & b; break;
+              case '|=': variables[aToken.value] = a | b; break;
+              case '^=': variables[aToken.value] = a ^ b; break;
+              case '+': r = a + b; break;
+              case '-': r = a - b; break;
+              case '*': r = a * b; break;
+              case '**': r = a ** b; break;
+              case '/': r = a / b; break;
+              case '%': r = a % b; break;
+              case '^': r = a ^ b; break;
+              case '|': r = a | b; break;
+              case '&': r = a & b; break;
+              case '<<': r = a << b; break;
+              case '>>': r = a >> b; break;
+              case '<': r = a < b ? TRUE : FALSE; break;
+              case '>': r = a > b ? TRUE : FALSE; break;
+              case '<=': r = a <= b ? TRUE : FALSE; break;
+              case '>=': r = a >= b ? TRUE : FALSE; break;
+              case '==': r = a == b ? TRUE : FALSE; break;
+              case '!=': r = a != b ? TRUE : FALSE; break;
+              case ',': break;
+              default: return { error: `unknown operator: ${t.value}` };
             }
-            let a = (aToken.type === Token.Type.Literal)
-              ? aToken.value
-              : variables[aToken.value];
-            let b = (bToken.type === Token.Type.Literal)
-              ? bToken.value
-              : variables[bToken.value];
-            let r;
-            try {
-              switch (t.value) {
-                case '=': variables[aToken.value] = b; break;
-                case '+=': variables[aToken.value] = a + b; break;
-                case '-=': variables[aToken.value] = a - b; break;
-                case '/=': variables[aToken.value] = a / b; break;
-                case '%=': variables[aToken.value] = a % b; break;
-                case '*=': variables[aToken.value] = a * b; break;
-                case '<<=': variables[aToken.value] = a << b; break;
-                case '>>=': variables[aToken.value] = a >> b; break;
-                case '&=': variables[aToken.value] = a & b; break;
-                case '|=': variables[aToken.value] = a | b; break;
-                case '^=': variables[aToken.value] = a ^ b; break;
-                case '+': r = a + b; break;
-                case '-': r = a - b; break;
-                case '*': r = a * b; break;
-                case '**': r = a ** b; break;
-                case '/': r = a / b; break;
-                case '%': r = a % b; break;
-                case '^': r = a ^ b; break;
-                case '|': r = a | b; break;
-                case '&': r = a & b; break;
-                case '<<': r = a << b; break;
-                case '>>': r = a >> b; break;
-                case '<': r = a < b ? TRUE : FALSE; break;
-                case '>': r = a > b ? TRUE : FALSE; break;
-                case '<=': r = a <= b ? TRUE : FALSE; break;
-                case '>=': r = a >= b ? TRUE : FALSE; break;
-                case '==': r = a == b ? TRUE : FALSE; break;
-                case '!=': r = a != b ? TRUE : FALSE; break;
-                default: return { error: `unknown operator: ${t.value}` };
-              }
-            }
-            catch (e) {
-              return { error: `invalid expression (${e.name})` };
-            }
-            if (typeof r === 'bigint') {
-              s.push(new Token(Token.Type.Literal, r));
-            }
+          }
+          catch (e) {
+            return { error: `invalid expression (${e.name})` };
+          }
+          if (typeof r === 'bigint') {
+            s.push(new Token(Token.Type.Literal, r));
           }
         }
       }
