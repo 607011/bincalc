@@ -48,10 +48,12 @@ a:hover {
 
 input[type="radio"] {
   margin-right: 0.2em;
+  cursor: pointer;
 }
 
 input[type="radio"] + label {
   margin-right: 1em;
+  cursor: pointer;
 }
 
 #help-button {
