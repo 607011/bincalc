@@ -67,37 +67,6 @@ Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', 
 
 Token.Symbols = { UnaryMinus: '\u{2212}' };
 
-Token.Operator = {
-  '\u2212': { prec: -3, assoc: RIGHT }, // unary minus
-  '~': { prec: -3, assoc: RIGHT },
-  '**': { prec: -4, assoc: RIGHT },
-  '*': { prec: -5, assoc: LEFT },
-  '/': { prec: -5, assoc: LEFT },
-  '%': { prec: -5, assoc: LEFT },
-  '+': { prec: -6, assoc: LEFT },
-  '-': { prec: -6, assoc: LEFT },
-  '<<': { prec: -7, assoc: LEFT },
-  '>>': { prec: -7, assoc: LEFT },
-  '<': { prec: -9, assoc: LEFT },
-  '>': { prec: -9, assoc: LEFT },
-  '==': { prec: -9, assoc: LEFT },
-  '!=': { prec: -9, assoc: LEFT },
-  '<=': { prec: -9, assoc: LEFT },
-  '>=': { prec: -9, assoc: LEFT },
-  '&': { prec: -11, assoc: LEFT },
-  '^': { prec: -12, assoc: LEFT },
-  '|': { prec: -13, assoc: LEFT },
-  '=': { prec: -16, assoc: RIGHT },
-  '&=': { prec: -16, assoc: RIGHT },
-  '^=': { prec: -16, assoc: RIGHT },
-  '|=': { prec: -16, assoc: RIGHT },
-  '+=': { prec: -16, assoc: RIGHT },
-  '-=': { prec: -16, assoc: RIGHT },
-  '*=': { prec: -16, assoc: RIGHT },
-  '/=': { prec: -16, assoc: RIGHT },
-  '%=': { prec: -16, assoc: RIGHT },
-};
-
 Token.Functions = {
   max: {
     f: (a, b) => a < b ? b : a,
@@ -159,6 +128,42 @@ Token.Functions = {
     n: 1
   },
 };
+
+Token.Operator = {
+  '\u2212': { prec: -3, assoc: RIGHT }, // unary minus
+  '~': { prec: -3, assoc: RIGHT },
+  '**': { prec: -4, assoc: RIGHT },
+  '*': { prec: -5, assoc: LEFT },
+  '/': { prec: -5, assoc: LEFT },
+  '%': { prec: -5, assoc: LEFT },
+  '+': { prec: -6, assoc: LEFT },
+  '-': { prec: -6, assoc: LEFT },
+  '<<': { prec: -7, assoc: LEFT },
+  '>>': { prec: -7, assoc: LEFT },
+  '<': { prec: -9, assoc: LEFT },
+  '>': { prec: -9, assoc: LEFT },
+  '==': { prec: -9, assoc: LEFT },
+  '!=': { prec: -9, assoc: LEFT },
+  '<=': { prec: -9, assoc: LEFT },
+  '>=': { prec: -9, assoc: LEFT },
+  '&': { prec: -11, assoc: LEFT },
+  '^': { prec: -12, assoc: LEFT },
+  '|': { prec: -13, assoc: LEFT },
+  '=': { prec: -16, assoc: RIGHT },
+  '&=': { prec: -16, assoc: RIGHT },
+  '^=': { prec: -16, assoc: RIGHT },
+  '|=': { prec: -16, assoc: RIGHT },
+  '+=': { prec: -16, assoc: RIGHT },
+  '-=': { prec: -16, assoc: RIGHT },
+  '*=': { prec: -16, assoc: RIGHT },
+  '/=': { prec: -16, assoc: RIGHT },
+  '%=': { prec: -16, assoc: RIGHT },
+  ',': { prec: -17, assoc: LEFT },
+};
+
+Object.keys(Token.Functions).forEach(f => {
+  Token.Operator[f] = { prec: -1, assoc: RIGHT};
+});
 
 Token.Types = [
   { regex: new RegExp(`^(${Object.keys(Token.Functions).join('|')})`), type: Token.Type.Function, name: 'function' },
