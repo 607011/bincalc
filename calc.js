@@ -47,6 +47,7 @@
     if (msg.data.error) {
       msgEl.innerHTML = msg.data.error;
       msgEl.classList.add('error');
+      loaderIconEl.classList.add('hidden');
     }
     else {
       msgEl.innerHTML = '';
@@ -55,13 +56,13 @@
       if (results && results.length > 0) {
         const t0Render = Date.now();
         const textResult = results.map(result => result.toString(base)).join('\n');
-        outEl.innerText = textResult;
         const dtRender = Date.now() - t0Render;
-        msgEl.innerHTML = `${msToStr(msg.data.dt)} seconds to calculate, ${msToStr(dtPost)} seconds to transfer, ${msToStr(dtRender)} seconds to convert to base ${base}.`;
+        outEl.innerText = textResult;
+        msgEl.innerHTML = `${msToStr(msg.data.dt)} to calculate, ${msToStr(dtPost)} to transfer, ${msToStr(dtRender)} to convert to base ${base}.`;
         msgEl.classList.add('hide');
+        loaderIconEl.classList.add('hidden');
       }
     }
-    loaderIconEl.classList.add('hidden');
   };
 
   let overlayKeyDown = event => {

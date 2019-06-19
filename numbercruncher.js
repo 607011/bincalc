@@ -2,7 +2,7 @@
 
 'use strict';
 
-Array.prototype.last = () => this[this.length - 1];
+Array.prototype.last = function() { return this[this.length - 1] };
 
 const LEFT = -1, RIGHT = +1;
 const TRUE = 1n, FALSE = 0n;
@@ -102,25 +102,26 @@ Token.Functions = {
     n: 1
   },
   sqrt: {
-    f: (...[n]) => {
-      if (n < 0n) {
+    f: (...[a]) => {
+      console.log(`sqrt(${a})`);
+      if (a < 0n) {
         throw 'cannot calculate square root of negative numbers';
       }
-      else if (n < 2n) {
-        return n;
+      else if (a < 2n) {
+        return a;
       }
       let shift = 2n;
-      let nShifted = n >> shift;
-      while (nShifted !== 0n && nShifted !== n) {
+      let nShifted = a >> shift;
+      while (nShifted !== 0n && nShifted !== a) {
         shift += 2n;
-        nShifted = n >> shift;
+        nShifted = a >> shift;
       }
       shift -= 2n;
       let result = 0n;
       while (shift >= 0n) {
         result <<= 1n;
         const candidateResult = result + 1n;
-        if ((candidateResult * candidateResult) <= (n >> shift)) {
+        if ((candidateResult * candidateResult) <= (a >> shift)) {
           result = candidateResult;
         }
         shift -= 2n;
@@ -206,7 +207,7 @@ let tokenize = str => {
             }
             break;
           default:
-            if (symbol === '-' && (tokens.length === 0 || tokens.last === Token.Type.LeftParenthesis || (tokens.last in Token.Operators))) {
+            if (symbol === '-' && (tokens.length === 0 || tokens.last().type === Token.Type.LeftParenthesis || (tokens.last().value in Token.Operators))) {
               symbol = Token.Symbols.UnaryMinus;
             }
             value = symbol;
@@ -281,6 +282,7 @@ let calculate = expr => {
   if (tokens) {
     const s = new Stack();
     const rpnTokens = shuntingYard(tokens);
+    console.log(rpnTokens);
     for (const t of rpnTokens) {
       if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
         s.push(t);
@@ -294,15 +296,35 @@ let calculate = expr => {
         const args = (function(s, n) {
           let args = [];
           for (let i = 0; i < n; ++i) {
-            args.push(s.pop().value);
+            const token = s.pop();
+            if (token instanceof Token) {
+              const value = (token.type === Token.Type.Literal)
+              ? token.value
+              : variables[token.value];
+              if (typeof value === 'bigint') {
+                args.unshift(value);
+              }
+              else {
+                return { error: `undefined variable '${token.value}'` };
+              }
+            }
+            else {
+              return { error: 'illegal token' };
+            }
           }
-          return args.reverse();
+          return args;
         })(s, n);
-        try {
-          s.push(new Token(Token.Type.Literal, f(...args)));
+        if (args instanceof Array) {
+          try {
+            const r = f(...args);
+            s.push(new Token(Token.Type.Literal, r));
+          }
+          catch (e) {
+            return { error: e };
+          }
         }
-        catch (e) {
-          return { error: e.message };
+        else {
+          return { error: args.error };
         }
       }
       else if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
@@ -393,6 +415,7 @@ onmessage = event => {
     const { result, error } = calculate(expr);
     if (error) {
       errorFound = true;
+      console.log(result, error);
       postMessage({ error: error });
       break;
     }
