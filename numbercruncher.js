@@ -282,7 +282,6 @@ let calculate = expr => {
   if (tokens) {
     const s = new Stack();
     const rpnTokens = shuntingYard(tokens);
-    console.log(rpnTokens);
     for (const t of rpnTokens) {
       if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
         s.push(t);
@@ -328,7 +327,19 @@ let calculate = expr => {
         }
       }
       else if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
-        s.top.value = -s.top.value;
+        if (s.top) {
+          switch (s.top.type) {
+            case Token.Type.Literal:
+              s.top.value = -s.top.value;
+              break;
+            case Token.Type.Variable:
+              s.top.value = -variables[s.top.value];
+              s.top.type = Token.Type.Literal;
+              break;
+            default:
+              break;
+          }
+        }
       }
       else {
         const bToken = s.pop();
@@ -379,7 +390,7 @@ let calculate = expr => {
             }
           }
           catch (e) {
-            return { error: `invalid expression (${e.name})` };
+            return { error: `invalid expression (${e.name}) ${e.message || ''}` };
           }
           if (typeof r === 'bigint') {
             s.push(new Token(Token.Type.Literal, r));
@@ -415,7 +426,6 @@ onmessage = event => {
     const { result, error } = calculate(expr);
     if (error) {
       errorFound = true;
-      console.log(result, error);
       postMessage({ error: error });
       break;
     }
