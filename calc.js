@@ -60,8 +60,8 @@
         outEl.innerText = textResult;
         msgEl.innerHTML = `${msToStr(msg.data.dt)} to calculate, ${msToStr(dtPost)} to transfer, ${msToStr(dtRender)} to convert to base ${base}.`;
         msgEl.classList.add('hide');
-        loaderIconEl.classList.add('hidden');
       }
+      loaderIconEl.classList.add('hidden');
     }
   };
 
