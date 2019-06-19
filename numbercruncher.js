@@ -309,7 +309,7 @@ onmessage = event => {
   if (!errorFound) {
     postMessage({
       results: results,
-      dt: performance.now() - t0,
+      dt: 1e-3 * (Date.now() - t0),
     });
   }
 }
