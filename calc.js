@@ -23,13 +23,16 @@
     const expressions = inEl.value.split('\n');
     t0 = Date.now();
     isCalculating = true;
-    numberCruncher.postMessage(expressions);
+    numberCruncher.postMessage({
+      expressions: expressions,
+      base: base
+    });
   };
 
   let baseChanged = event => {
     base = parseInt(event.target.value);
     localStorage.setItem('base', base);
-    outEl.innerText = results.map(result => result.toString(base)).join('\n');
+    formulaChanged();
   };
 
   let msToStr = ms => {
@@ -52,13 +55,13 @@
     else {
       msgEl.innerHTML = '';
       results = msg.data.results;
-      const dtPost = Date.now() - t0 - msg.data.dt;
+      const dtPost = Date.now() - t0 - msg.data.dtCalc - msg.data.dtRender;
       if (results && results.length > 0) {
         const t0Render = Date.now();
-        const textResult = results.map(result => result.toString(base)).join('\n');
+        const textResult = results.join('\n');
         const dtRender = Date.now() - t0Render;
         outEl.innerText = textResult;
-        msgEl.innerHTML = `${msToStr(msg.data.dt)} to calculate, ${msToStr(dtPost)} to transfer, ${msToStr(dtRender)} to convert to base ${base}.`;
+        msgEl.innerHTML = `${msToStr(msg.data.dtCalc)} to calculate, ${msToStr(dtPost)} to transfer, ${msToStr(msg.data.dtRender)} to convert to base ${base}.`;
         msgEl.classList.add('hide');
       }
       loaderIconEl.classList.add('hidden');
@@ -96,19 +99,14 @@
   };
 
   let init = () => {
+    let workerFile = 'numbercruncher.js';
     overlayEl = document.getElementById('overlay');
     try {
       let x = BigInt(0);
     }
     catch (e) {
-      fetch('unsupported.html')
-      .then(response => {
-        response.body.getReader().read().then(html => {
-          overlayEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
-          overlayEl.classList.remove('hidden');
-        });
-      });
-      return;
+      workerFile = 'numbercruncher-jsbi.js'
+      console.debug('BigInt not supported. Falling back to JSBI.');
     }
     loaderIconEl = document.getElementById('loader-icon');
     inEl = document.getElementById('input');
@@ -118,7 +116,7 @@
     baseFormEl = document.getElementById('base-form');
     document.getElementById(`base-${base}`).checked = true;
     baseFormEl.addEventListener('change', baseChanged);
-    numberCruncher = new Worker('numbercruncher.js');
+    numberCruncher = new Worker(workerFile);
     numberCruncher.onmessage = numberCruncherReady;
     window.addEventListener('keyup', event => {
       switch (event.key) {
@@ -133,7 +131,7 @@
     fetch('help.html')
       .then(response => {
         response.body.getReader().read().then(html => {
-          overlayEl.innerHTML = new TextDecoder("utf-8").decode(html.value);
+          overlayEl.innerHTML = new TextDecoder('utf-8').decode(html.value);
         });
         document.getElementById('help-button').addEventListener('click', toggleHelp);
       });

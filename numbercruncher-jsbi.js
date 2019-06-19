@@ -2,10 +2,12 @@
 
 'use strict';
 
+importScripts('jsbi.js');
+
 Array.prototype.last = function() { return this[this.length - 1] };
 
 const LEFT = -1, RIGHT = +1;
-const TRUE = 1n, FALSE = 0n;
+const TRUE = JSBI.BigInt(1), FALSE = JSBI.BigInt(0);
 
 class Stack {
   constructor() {
@@ -69,20 +71,20 @@ Token.Symbols = { UnaryMinus: '\u{2212}' };
 
 Token.Functions = {
   max: {
-    f: (...[a, b]) => a > b ? a : b,
+    f: (...[a, b]) => JSBI.greaterThan(a, b) ? a : b,
     n: 2
   },
   min: {
-    f: (...[a, b]) => a < b ? a : b,
+    f: (...[a, b]) => JSBI.lessThan(a, b) ? a : b,
     n: 2
   },
   gcd: {
     f: (...[a, b]) => {
-      if (a === 0n || b === 0n) {
-        return 0n;
+      if (JSBI.equal(a, JSBI.__zero()) || JSBI.equal(b, JSBI.__zero())) {
+        return JSBI.__zero();
       }
-      while (b !== 0n) {
-        [a, b] = [b, a % b];
+      while (!JSBI.equal(b, JSBI.__zero())) {
+        [a, b] = [b, JSBI.remainder(a, b)];
       }
       return a;
     },
@@ -90,40 +92,42 @@ Token.Functions = {
   },
   lcm: {
     f: (...[a, b]) => {
-      if (a === 0n || b === 0n) {
-        return 0n;
+      if (JSBI.equal(a, JSBI.__zero()) || JSBI.equal(b, JSBI.__zero())) {
+        return JSBI.__zero();
       }
-      return a * b / Token.Functions.gcd.f(a, b);
+      return JSBI.divide(JSBI.multiply(a, b), Token.Functions.gcd.f(a, b));
     },
     n: 2
   },
   sign: {
-    f: (...[a]) => a < 0n ? -1n : 1n,
+    f: (...[a]) => JSBI.lessThan(a, JSBI.__zero()) ? JSBI.BigInt(-1) : JSBI.BigInt(1),
     n: 1
   },
   sqrt: {
     f: (...[a]) => {
-      if (a < 0n) {
+      const One = JSBI.BigInt(1);
+      const Two = JSBI.BigInt(2);
+      if (JSBI.lessThan(a, JSBI.__zero())) {
         throw 'cannot calculate square root of negative numbers';
       }
-      else if (a < 2n) {
+      else if (JSBI.lessThan(a, Two)) {
         return a;
       }
-      let shift = 2n;
-      let nShifted = a >> shift;
-      while (nShifted !== 0n && nShifted !== a) {
-        shift += 2n;
-        nShifted = a >> shift;
+      let shift = Two;
+      let nShifted = JSBI.signedRightShift(a, shift);
+      while (!JSBI.equal(nShifted, JSBI.__zero()) && !JSBI.equal(nShifted, a)) {
+        shift += JSBI.BigInt(2);
+        nShifted = JSBI.signedRightShift(a, shift);
       }
-      shift -= 2n;
-      let result = 0n;
-      while (shift >= 0n) {
-        result <<= 1n;
-        const candidateResult = result + 1n;
-        if ((candidateResult * candidateResult) <= (a >> shift)) {
+      shift -= Two;
+      let result = JSBI.__zero();
+      while (JSBI.greaterThanOrEqual(shift, JSBI.__zero())) {
+        result = JSBI.leftShift(result, One);
+        const candidateResult = JSBI.add(result, One);
+        if (JSBI.lessThanOrEqual(JSBI.multiply(candidateResult, candidateResult), JSBI.signedRightShift(a, shift))) {
           result = candidateResult;
         }
-        shift -= 2n;
+        shift = JSBI.subtract(shift, Two);
       }
       return result;
     },
@@ -199,7 +203,7 @@ let tokenize = str => {
         switch (t.type) {
           case Token.Type.Literal:
             try {
-              value = BigInt(Token.BasePrefix[t.base] + symbol);
+              value = JSBI.BigInt(Token.BasePrefix[t.base] + symbol);
             }
             catch (e) {
               return { error: e };
@@ -273,7 +277,7 @@ let shuntingYard = tokens => {
   return queue;
 }
 
-let calculate = (expr, base) => {
+let calculate = expr => {
   let { tokens, error } = tokenize(expr);
   if (error) {
     return { error: error };
@@ -299,11 +303,11 @@ let calculate = (expr, base) => {
               const value = (token.type === Token.Type.Literal)
               ? token.value
               : variables[token.value];
-              if (typeof value === 'bigint') {
+              if (value instanceof Array) {
                 args.unshift(value);
               }
               else {
-                return { error: `undefined variable '${token.value}'` };
+                return { error: `***undefined variable '${token.value}'` };
               }
             }
             else {
@@ -329,10 +333,10 @@ let calculate = (expr, base) => {
         if (s.top) {
           switch (s.top.type) {
             case Token.Type.Literal:
-              s.top.value = -s.top.value;
+              s.top.value = JSBI.unaryMinus(s.top.value);
               break;
             case Token.Type.Variable:
-              s.top.value = -variables[s.top.value];
+              s.top.value = JSBI.unaryMinus(variables[s.top.value]);
               s.top.type = Token.Type.Literal;
               break;
             default:
@@ -357,33 +361,33 @@ let calculate = (expr, base) => {
           try {
             switch (t.value) {
               case '=': variables[aToken.value] = b; break;
-              case '+=': variables[aToken.value] = a + b; break;
-              case '-=': variables[aToken.value] = a - b; break;
-              case '/=': variables[aToken.value] = a / b; break;
-              case '%=': variables[aToken.value] = a % b; break;
-              case '*=': variables[aToken.value] = a * b; break;
-              case '<<=': variables[aToken.value] = a << b; break;
-              case '>>=': variables[aToken.value] = a >> b; break;
-              case '&=': variables[aToken.value] = a & b; break;
-              case '|=': variables[aToken.value] = a | b; break;
-              case '^=': variables[aToken.value] = a ^ b; break;
-              case '+': r = a + b; break;
-              case '-': r = a - b; break;
-              case '*': r = a * b; break;
-              case '**': r = a ** b; break;
-              case '/': r = a / b; break;
-              case '%': r = a % b; break;
-              case '^': r = a ^ b; break;
-              case '|': r = a | b; break;
-              case '&': r = a & b; break;
-              case '<<': r = a << b; break;
-              case '>>': r = a >> b; break;
-              case '<': r = a < b ? TRUE : FALSE; break;
-              case '>': r = a > b ? TRUE : FALSE; break;
-              case '<=': r = a <= b ? TRUE : FALSE; break;
-              case '>=': r = a >= b ? TRUE : FALSE; break;
-              case '==': r = a == b ? TRUE : FALSE; break;
-              case '!=': r = a != b ? TRUE : FALSE; break;
+              case '+=': variables[aToken.value] = JSBI.add(a, b); break;
+              case '-=': variables[aToken.value] = JSBI.subtract(a, b); break;
+              case '/=': variables[aToken.value] = JSBI.divide(a, b); break;
+              case '%=': variables[aToken.value] = JSBI.remainder(a, b); break;
+              case '*=': variables[aToken.value] = JSBI.multiply(a, b); break;
+              case '<<=': variables[aToken.value] = JSBI.leftShift(a, b); break;
+              case '>>=': variables[aToken.value] = JSBI.signedRightShift(a, b); break;
+              case '&=': variables[aToken.value] = JSBI.bitwiseAnd(a, b); break;
+              case '|=': variables[aToken.value] = JSBI.bitwiseOr(a, b); break;
+              case '^=': variables[aToken.value] = JSBI.bitwiseXor(a, b); break;
+              case '+': r = JSBI.add(a, b); break;
+              case '-': r = JSBI.subtract(a, b); break;
+              case '*': r = JSBI.multiply(a, b); break;
+              case '**': r = JSBI.exponentiate(a, b); break;
+              case '/': r = JSBI.divide(a, b); break;
+              case '%': r = JSBI.remainder(a, b); break;
+              case '^': r = JSBI.bitwiseXor(a, b); break;
+              case '|': r = JSBI.bitwiseOr(a, b); break;
+              case '&': r = JSBI.bitwiseAnd(a, b); break;
+              case '<<': r = JSBI.leftShift(a, b); break;
+              case '>>': r = JSBI.signedRightShift(a, b); break;
+              case '<': r = JSBI.lessThan(a, b) ? TRUE : FALSE; break;
+              case '>': r = JSBI.greaterThan(a, b) ? TRUE : FALSE; break;
+              case '<=': r = JSBI.lessThanOrEqual(a, b) ? TRUE : FALSE; break;
+              case '>=': r = JSBI.greaterThanOrEqual(a, b) ? TRUE : FALSE; break;
+              case '==': r = JSBI.equal(a, b) ? TRUE : FALSE; break;
+              case '!=': r = JSBI.equal(a, b) ? FALSE : TRUE; break;
               case ',': break;
               default: return { error: `unknown operator: ${t.value}` };
             }
@@ -391,7 +395,7 @@ let calculate = (expr, base) => {
           catch (e) {
             return { error: `invalid expression (${e.name}) ${e.message || ''}` };
           }
-          if (typeof r === 'bigint') {
+          if (r instanceof Array) {
             s.push(new Token(Token.Type.Literal, r));
           }
         }
@@ -429,10 +433,11 @@ onmessage = event => {
     dtCalc += Date.now() - calcT0;
     if (error) {
       errorFound = true;
-      postMessage({ error: error });
+      console.error(error.message);
+      postMessage({ error: error.message || error });
       break;
     }
-    if (typeof result === 'bigint') {
+    if (result instanceof Array) {
       const renderT0 = Date.now();
       results.push(result.toString(base));
       dtRender += Date.now() - renderT0;
