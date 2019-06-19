@@ -99,24 +99,64 @@ Token.Operator = {
 };
 
 Token.Functions = {
-  max: (a, b) => a < b ? b : a,
-  min: (a, b) => a > b ? b : a,
-  gcd: (a, b) => {
-    if (a === 0n || b === 0n) {
-      return 0n;
-    }
-    while (b !== 0n) {
-      const h = a % b;
-      a = b;
-      b = h;
-    }
-    return a;
+  max: {
+    f: (a, b) => a < b ? b : a,
+    n: 2
   },
-  lcm: (a, b) => {
-    if (a === 0n || b === 0n) {
-      return 0n;
-    }
-    return a * b / Token.Functions.gcd(a, b);
+  min: {
+    f: (a, b) => a > b ? b : a,
+    n: 2
+  },
+  gcd: {
+    f: (a, b) => {
+      if (a === 0n || b === 0n) {
+        return 0n;
+      }
+      while (b !== 0n) {
+        const h = a % b;
+        a = b;
+        b = h;
+      }
+      return a;
+    },
+    n: 2
+  },
+  lcm: {
+    f: (a, b) => {
+      if (a === 0n || b === 0n) {
+        return 0n;
+      }
+      return a * b / Token.Functions.gcd(a, b);
+    },
+    n: 2
+  },
+  sqrt: {
+    f: n => {
+      if (n < 0) {
+        throw 'cannot calculate square root of negative numbers';
+      }
+      else if (n < 2) {
+        return n;
+      }
+      let shift = 2;
+      let nShifted = n >> shift;
+      while (nShifted !== 0n && nShifted !== n) {
+        shift += 2;
+        nShifted = n >> shift;
+      }
+      shift -= 2;
+      let result = 0n;
+      while (shift >= 0n) {
+        result <<= 1;
+        let candidateResult = result + 1n;
+        if ((candidateResult * candidateResult) <= (n >> shift)) {
+          result = candidateResult;
+        }
+        shift -= 2;
+      }
+      return result;
+    },
+    n: 1
   },
 };
 
