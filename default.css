@@ -58,6 +58,7 @@ input[type="radio"] + label {
 
 #help-button {
   font-size: smaller;
+  cursor: pointer;
 }
 
 p {
@@ -135,6 +136,32 @@ tfoot td {
   to {
     opacity: 0;
   }
+}
+
+header, footer {
+  left: 0;
+  right: 0;
+  padding: 0 8pt;
+  background-color: #333;
+  color: #eee;
+}
+
+header {
+  border-bottom: 1px solid #222;
+}
+
+footer {
+  position: fixed;
+  bottom: 0;
+  border-top: 1px solid #222;
+}
+
+footer a {
+  color: #ddd;
+}
+
+footer a:visited {
+  color: #ccc;
 }
 
 #output, textarea {
