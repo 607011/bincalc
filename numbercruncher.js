@@ -59,7 +59,7 @@ Token.Type = (function (types) {
     obj[types[i]] = +i + 1;
   }
   return obj;
-})(['Literal', 'Operator', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
+})(['Literal', 'Operator', 'Function', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
 
 Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
 
@@ -98,7 +98,30 @@ Token.Operator = {
   '%=': { prec: -16, assoc: RIGHT },
 };
 
+Token.Functions = {
+  max: (a, b) => a < b ? b : a,
+  min: (a, b) => a > b ? b : a,
+  gcd: (a, b) => {
+    if (a === 0n || b === 0n) {
+      return 0n;
+    }
+    while (b !== 0n) {
+      const h = a % b;
+      a = b;
+      b = h;
+    }
+    return a;
+  },
+  lcm: (a, b) => {
+    if (a === 0n || b === 0n) {
+      return 0n;
+    }
+    return a * b / Token.Functions.gcd(a, b);
+  },
+};
+
 Token.Types = [
+  { regex: new RegExp(`^(${Object.keys(Token.Functions).join('|')})`), type: Token.Type.Function, name: 'function' },
   { regex: new RegExp(`^(${Token.Operators.map(o => o.replace(/[\|\-\/\*\+\^\$]/g, '\\$&')).join('|')})`), type: Token.Type.Operator, name: 'operator' },
   { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, name: 'binary' },
   { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, name: 'octal' },
@@ -108,7 +131,6 @@ Token.Types = [
   { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
   { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
 ];
-
 
 let variables = {};
 let results = [];
