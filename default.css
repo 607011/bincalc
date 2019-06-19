@@ -73,11 +73,18 @@ p {
 }
 
 .hidden {
-  display: none;
+  display: none !important;
 }
 
 .show {
   display: block;
+}
+
+#loader-icon {
+  display: inline-block;
+  width: 17px;
+  height: 17px;
+  margin-right: 8px;
 }
 
 .hide {

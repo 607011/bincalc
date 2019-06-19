@@ -6,6 +6,7 @@
   let inEl = null;
   let outEl = null;
   let msgEl = null;
+  let loaderIconEl = null;
   let baseFormEl = null;
   let base = localStorage.getItem('base') || 2;
   let results = [];
@@ -18,8 +19,9 @@
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
     msgEl.classList.remove('hide');
     msgEl.classList.remove('error');
+    loaderIconEl.classList.remove('hidden');
     const expressions = inEl.value.split('\n');
-    t0 = performance.now();
+    t0 = Date.now();
     isCalculating = true;
     numberCruncher.postMessage(expressions);
   };
@@ -39,16 +41,17 @@
     else {
       msgEl.innerHTML = '';
       results = msg.data.results;
-      const dtPost = 1e-3 * (performance.now() - t0);
+      const dtPost = 1e-3 * (Date.now() - t0);
       if (results && results.length > 0) {
-        const t0Render = performance.now();
+        const t0Render = Date.now();
         const textResult = results.map(result => result.toString(base)).join('\n');
         outEl.innerText = textResult;
-        const dtRender = 1e-3 * (performance.now() - t0Render);
+        const dtRender = 1e-3 * (Date.now() - t0Render);
         msgEl.innerHTML = `${msg.data.dt.toFixed(4)} seconds to calculate, ${dtPost.toFixed(4)} seconds to transfer, ${dtRender.toFixed(4)} seconds to convert to base ${base}.`;
         msgEl.classList.add('hide');
       }
     }
+    loaderIconEl.classList.add('hidden');
   };
 
   let overlayKeyDown = event => {
@@ -63,6 +66,7 @@
       numberCruncher.terminate();
       numberCruncher = new Worker('numbercruncher.js');
       msgEl.classList.add('hide');
+      loaderIconEl.classList.add('hide');
     }
   };
 
@@ -95,6 +99,7 @@
       });
       return;
     }
+    loaderIconEl = document.getElementById('loader-icon');
     inEl = document.getElementById('input');
     inEl.addEventListener('input', formulaChanged);
     outEl = document.getElementById('output');
@@ -113,7 +118,6 @@
           terminateWorker();
           break;
       }
-
     });
     fetch('help.html')
       .then(response => {

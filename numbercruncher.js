@@ -290,7 +290,7 @@ let calculate = expr => {
 };
 
 onmessage = event => {
-  let t0 = performance.now();
+  let t0 = Date.now();
   const expressions = event.data;
   let errorFound = false;
   let results = [];

@@ -47,11 +47,25 @@
         <label for="base-16">hexadecimal</label>
       </form>
     </p>
-    <p><span id="msg"></span></p>
+    <p>
+      <span id="loader-icon" class="hidden">
+        <svg width="17" height="17" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="8" r="2" stroke-opacity="0" fill="none" stroke="#222">
+            <animate attributeName="r" begin="1s" dur="2s" values="1;8" calcMode="linear" repeatCount="indefinite" />
+            <animate attributeName="stroke-opacity" begin="1s" dur="2s" values="1;0" calcMode="linear" repeatCount="indefinite" />
+            <animate attributeName="stroke-width" begin="1s" dur="2s" values="2;0" calcMode="linear" repeatCount="indefinite" />
+          </circle>
+          <circle cx="8" cy="8" r="2" fill="none" stroke="#222">
+            <animate attributeName="r" begin="0s" dur="1s" values="6;1;2;3;4;5;6" calcMode="linear" repeatCount="indefinite" />
+          </circle>
+        </svg>
+      </span>
+      <span id="msg"></span>
+    </p>
     <hr style="margin-top: 19pt; margin-bottom: 7pt;" />
     <dp><span style="font-size: smaller">
         <a href="https://github.com/ola-ct/bincalc" target="_blank">v0.6-BETA</a>
-         &ndash;
+        &ndash;
         Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, <a
           href="https://www.heise-gruppe.de/heise-medien.html" target="_blank">Heise Medien GmbH & Co. KG</a>, <a
           href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
