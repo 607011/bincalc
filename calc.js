@@ -32,6 +32,16 @@
     outEl.innerText = results.map(result => result.toString(base)).join('\n');
   };
 
+  let msToStr = ms => {
+    if (ms < 1) {
+      return `&lt;1ms`;
+    }
+    if (ms < 1000) {
+      return `${ms.toFixed(0)}ms`
+    }
+    return `${(1e-3 * ms).toFixed(1)}s`;
+  };
+
   let numberCruncherReady = msg => {
     isCalculating = false;
     if (msg.data.error) {
@@ -41,13 +51,13 @@
     else {
       msgEl.innerHTML = '';
       results = msg.data.results;
-      const dtPost = 1e-3 * (Date.now() - t0);
+      const dtPost = Date.now() - t0 - msg.data.dt;
       if (results && results.length > 0) {
         const t0Render = Date.now();
         const textResult = results.map(result => result.toString(base)).join('\n');
         outEl.innerText = textResult;
-        const dtRender = 1e-3 * (Date.now() - t0Render);
-        msgEl.innerHTML = `${msg.data.dt.toFixed(4)} seconds to calculate, ${dtPost.toFixed(4)} seconds to transfer, ${dtRender.toFixed(4)} seconds to convert to base ${base}.`;
+        const dtRender = Date.now() - t0Render;
+        msgEl.innerHTML = `${msToStr(msg.data.dt)} seconds to calculate, ${msToStr(dtPost)} seconds to transfer, ${msToStr(dtRender)} seconds to convert to base ${base}.`;
         msgEl.classList.add('hide');
       }
     }

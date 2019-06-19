@@ -403,7 +403,7 @@ onmessage = event => {
   if (!errorFound) {
     postMessage({
       results: results,
-      dt: 1e-3 * (Date.now() - t0),
+      dt: Date.now() - t0,
     });
   }
 }
