@@ -57,9 +57,7 @@
       msgEl.innerHTML = '';
       const dtPost = Date.now() - t0 - msg.data.dtCalc - msg.data.dtRender;
       if (results && results.length > 0) {
-        const t0Render = Date.now();
-        const textResult = results.join('\n');
-        const dtRender = Date.now() - t0Render;
+        const textResult = results.map(r => r.result).join('\n');
         outEl.innerText = textResult;
         msgEl.innerHTML = `${msToStr(msg.data.dtCalc)} to calculate, ${msToStr(dtPost)} to transfer, ${msToStr(msg.data.dtRender)} to convert to base ${base}.`;
         msgEl.classList.add('hide');

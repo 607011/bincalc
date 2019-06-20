@@ -90,8 +90,7 @@ Token.Types = [
 
 
 
-let tokenize = str => {
-  let expr = str.replace(/\s+/g, '');
+let tokenize = expr => {
   let tokens = [];
   while (expr.length > 0) {
     let found = false;

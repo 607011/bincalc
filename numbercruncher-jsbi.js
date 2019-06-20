@@ -72,7 +72,6 @@ Token.Functions = {
   },
 };
 
-
 class Calculator {
   constructor() {
     this.variables = {};

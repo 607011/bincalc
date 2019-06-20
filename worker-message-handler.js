@@ -15,8 +15,9 @@ onmessage = event => {
   let errorFound = false;
   let results = [];
   let calculator = new Calculator();
-  for (const expr of expressions) {
+  for (const expression of expressions) {
     const calcT0 = Date.now();
+    const expr = expression.replace(/\s+/g, '');
     const { result, error } = calculator.calculate(expr);
     dtCalc += Date.now() - calcT0;
     if (error) {
@@ -26,7 +27,10 @@ onmessage = event => {
     }
     if (typeof result === 'bigint' || result instanceof JSBI) {
       const renderT0 = Date.now();
-      results.push(result.toString(base));
+      results.push({
+        expression: expr,
+        result: result.toString(base),
+      });
       dtRender += Date.now() - renderT0;
     }
   }
