@@ -4,14 +4,14 @@
   'use strict';
 
   let inEl = null;
-  let outEl = null;
   let msgEl = null;
+  let overlayEl = null;
+  let outputPaneEl = null;
   let loaderIconEl = null;
   let baseFormEl = null;
   let base = localStorage.getItem('base') || 2;
   let results = [];
   let numberCruncher = null;
-  let overlayEl = null;
   let t0 = 0;
   let isCalculating = false;
 
@@ -45,6 +45,20 @@
     return `${(1e-3 * ms).toFixed(1)}s`;
   };
 
+  let visualResultFrom = result => {
+    const containerEl = document.createElement('div');
+    containerEl.classList.add('result-container');
+    const exprEl = document.createElement('span');
+    exprEl.classList.add('expression');
+    exprEl.innerHTML = `${result.expression} → `;
+    const resultEl = document.createElement('span');
+    resultEl.classList.add('result');
+    resultEl.innerHTML = result.result;
+    containerEl.appendChild(exprEl);
+    containerEl.appendChild(resultEl);
+    return containerEl;
+  };
+
   let numberCruncherReady = msg => {
     isCalculating = false;
     if (msg.data.error) {
@@ -57,8 +71,10 @@
       msgEl.innerHTML = '';
       const dtPost = Date.now() - t0 - msg.data.dtCalc - msg.data.dtRender;
       if (results && results.length > 0) {
-        const textResult = results.map(r => r.result).join('\n');
-        outEl.innerText = textResult;
+        outputPaneEl.innerHTML = '';
+        for (const result of results) {
+          outputPaneEl.appendChild(visualResultFrom(result))
+        }
         msgEl.innerHTML = `${msToStr(msg.data.dtCalc)} to calculate, ${msToStr(dtPost)} to transfer, ${msToStr(msg.data.dtRender)} to convert to base ${base}.`;
         msgEl.classList.add('hide');
       }
@@ -109,7 +125,7 @@
     loaderIconEl = document.getElementById('loader-icon');
     inEl = document.getElementById('input');
     inEl.addEventListener('input', formulaChanged);
-    outEl = document.getElementById('output');
+    outputPaneEl = document.getElementById('output-pane');
     msgEl = document.getElementById('msg');
     baseFormEl = document.getElementById('base-form');
     document.getElementById(`base-${base}`).checked = true;
