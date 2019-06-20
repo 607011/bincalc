@@ -16,7 +16,7 @@ class Stack {
     return this._stack.pop();
   }
   get top() {
-    return this._stack[this._stack.length - 1];
+    return this._stack.last();
   }
   set top(v) {
     this._stack[this._stack.length - 1] = v;

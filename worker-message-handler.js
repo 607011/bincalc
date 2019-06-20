@@ -2,6 +2,11 @@
 
 'use strict';
 
+// ensure that JSBI is defined when using the message handler in browsers with BigInt support
+if (typeof JSBI !== 'function') {
+  self.JSBI = function() { /* ... */};
+}
+
 onmessage = event => {
   let dtCalc = 0;
   let dtRender = 0;
@@ -16,11 +21,10 @@ onmessage = event => {
     dtCalc += Date.now() - calcT0;
     if (error) {
       errorFound = true;
-      console.error(error.message);
       postMessage({ error: error.message || error });
       break;
     }
-    if (result instanceof Array || typeof result === 'bigint') {
+    if (typeof result === 'bigint' || result instanceof JSBI) {
       const renderT0 = Date.now();
       results.push(result.toString(base));
       dtRender += Date.now() - renderT0;
