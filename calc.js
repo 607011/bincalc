@@ -144,7 +144,8 @@
     });
     fetch('help.html')
       .then(response => {
-        response.body.getReader().read().then(html => {
+        response.body.getReader().read()
+        .then(html => {
           overlayEl.innerHTML = new TextDecoder('utf-8').decode(html.value);
         });
         document.getElementById('help-button').addEventListener('click', toggleHelp);

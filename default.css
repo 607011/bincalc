@@ -66,9 +66,8 @@ p {
 }
 
 #msg {
-  min-height: 5ex;
-  display: inline-block;
   font-weight: bold;
+  vertical-align: middle;
 }
 
 .error {
@@ -88,6 +87,7 @@ p {
   width: 17px;
   height: 17px;
   margin-right: 8px;
+  vertical-align: middle;
 }
 
 .hide {
@@ -181,18 +181,18 @@ footer a:visited {
   width: auto;
 }
 
+.result-container {
+  margin-bottom: 1ex;
+}
+
 .expression {
-  padding: 0 0.4em 0 0.2em;
+  padding: 0 0.2em;
   background-color:rgb(238, 143, 0);
   color: white;
   display: inline-block;
 }
 
 .result {
-  padding: 0 0.4em 0 0.2em;
+  padding: 0 0.2em;
   display: inline;
-}
-
-.result-container {
-  margin-bottom: 1ex;
 }
