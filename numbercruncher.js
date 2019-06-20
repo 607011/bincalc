@@ -2,70 +2,9 @@
 
 'use strict';
 
-Array.prototype.last = function() { return this[this.length - 1] };
+importScripts('token.js', 'stack.js', 'worker-message-handler.js');
 
-const LEFT = -1, RIGHT = +1;
 const TRUE = 1n, FALSE = 0n;
-
-class Stack {
-  constructor() {
-    this._stack = [];
-    this._nextIndex = 0;
-  }
-  push(value) {
-    this._stack.push(value);
-  }
-  pop() {
-    return this._stack.pop();
-  }
-  get top() {
-    return this._stack[this._stack.length - 1];
-  }
-  set top(v) {
-    this._stack[this._stack.length - 1] = v;
-  }
-  get length() {
-    return this._stack.length;
-  }
-  [Symbol.iterator]() {
-    return {
-      next: () => {
-        if (this._nextIndex < this.length) {
-          return { value: this._stack[this._nextIndex++], done: false };
-        }
-        this._nextIndex = 0;
-        return { done: true };
-      }
-    }
-  }
-}
-
-class Token {
-  constructor(type, value) {
-    this._type = type;
-    this._value = value;
-  }
-  get type() { return this._type; }
-  get value() { return this._value; }
-  set type(t) { this._type = t; }
-  set value(v) { this._value = v; }
-  get precedence() { return Token.Operator[this.value].prec; }
-  get associativity() { return Token.Operator[this.value].assoc; }
-}
-
-Token.Type = (types => {
-  let obj = {};
-  for (const i in types) {
-    obj[types[i]] = +i + 1;
-  }
-  return obj;
-})(['Literal', 'Operator', 'Function', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
-
-Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
-
-Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', '^', '&', '|', '+', '-', '**', '*', '/', '%', '<<', '>>', '==', '!=', '<=', '>=', '>', '<', '=', ','];
-
-Token.Symbols = { UnaryMinus: '\u{2212}' };
 
 Token.Functions = {
   max: {
@@ -130,54 +69,6 @@ Token.Functions = {
     n: 1
   },
 };
-
-Token.Operator = {
-  '\u2212': { prec: -3, assoc: RIGHT }, // unary minus
-  '~': { prec: -3, assoc: RIGHT },
-  '**': { prec: -4, assoc: RIGHT },
-  '*': { prec: -5, assoc: LEFT },
-  '/': { prec: -5, assoc: LEFT },
-  '%': { prec: -5, assoc: LEFT },
-  '+': { prec: -6, assoc: LEFT },
-  '-': { prec: -6, assoc: LEFT },
-  '<<': { prec: -7, assoc: LEFT },
-  '>>': { prec: -7, assoc: LEFT },
-  '<': { prec: -9, assoc: LEFT },
-  '>': { prec: -9, assoc: LEFT },
-  '==': { prec: -9, assoc: LEFT },
-  '!=': { prec: -9, assoc: LEFT },
-  '<=': { prec: -9, assoc: LEFT },
-  '>=': { prec: -9, assoc: LEFT },
-  '&': { prec: -11, assoc: LEFT },
-  '^': { prec: -12, assoc: LEFT },
-  '|': { prec: -13, assoc: LEFT },
-  '=': { prec: -16, assoc: RIGHT },
-  '&=': { prec: -16, assoc: RIGHT },
-  '^=': { prec: -16, assoc: RIGHT },
-  '|=': { prec: -16, assoc: RIGHT },
-  '+=': { prec: -16, assoc: RIGHT },
-  '-=': { prec: -16, assoc: RIGHT },
-  '*=': { prec: -16, assoc: RIGHT },
-  '/=': { prec: -16, assoc: RIGHT },
-  '%=': { prec: -16, assoc: RIGHT },
-  ',': { prec: -17, assoc: LEFT },
-};
-
-Object.keys(Token.Functions).forEach(f => {
-  Token.Operator[f] = { prec: -1, assoc: RIGHT };
-});
-
-Token.Types = [
-  { regex: new RegExp(`^(${Object.keys(Token.Functions).join('|')})`), type: Token.Type.Function, name: 'function' },
-  { regex: new RegExp(`^(${Token.Operators.map(o => o.replace(/[\|\-\/\*\+\^\$]/g, '\\$&')).join('|')})`), type: Token.Type.Operator, name: 'operator' },
-  { regex: /^b([01]+)/, type: Token.Type.Literal, base: 2, name: 'binary' },
-  { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, name: 'octal' },
-  { regex: /^([0-9]+)/, type: Token.Type.Literal, base: 10, name: 'decimal' },
-  { regex: /^x([0-9a-fA-F]+)/, type: Token.Type.Literal, base: 16, name: 'hexadecimal' },
-  { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, name: 'variable' },
-  { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
-  { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
-];
 
 
 let variables = {};
@@ -273,7 +164,7 @@ let shuntingYard = tokens => {
   return queue;
 }
 
-let calculate = (expr, base) => {
+let calculate = (expr) => {
   let { tokens, error } = tokenize(expr);
   if (error) {
     return { error: error };
@@ -414,35 +305,3 @@ let calculate = (expr, base) => {
   }
   return { error: 'invalid expression' };
 };
-
-onmessage = event => {
-  let dtCalc = 0;
-  let dtRender = 0;
-  const expressions = event.data.expressions;
-  const base = event.data.base;
-  let errorFound = false;
-  let results = [];
-  variables = {};
-  for (const expr of expressions) {
-    const calcT0 = Date.now();
-    const { result, error } = calculate(expr, base);
-    dtCalc += Date.now() - calcT0;
-    if (error) {
-      errorFound = true;
-      postMessage({ error: error });
-      break;
-    }
-    if (typeof result === 'bigint') {
-      const renderT0 = Date.now();
-      results.push(result.toString(base));
-      dtRender += Date.now() - renderT0;
-    }
-  }
-  if (!errorFound) {
-    postMessage({
-      results: results,
-      dtCalc: dtCalc,
-      dtRender: dtRender,
-    });
-  }
-}

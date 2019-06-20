@@ -52,9 +52,9 @@
       msgEl.classList.add('error');
       loaderIconEl.classList.add('hidden');
     }
-    else {
-      msgEl.innerHTML = '';
+    else if (msg.data.results) {
       results = msg.data.results;
+      msgEl.innerHTML = '';
       const dtPost = Date.now() - t0 - msg.data.dtCalc - msg.data.dtRender;
       if (results && results.length > 0) {
         const t0Render = Date.now();
