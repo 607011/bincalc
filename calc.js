@@ -14,11 +14,23 @@
   let numberCruncher = null;
   let t0 = 0;
   let isCalculating = false;
+  let workerFile = 'numbercruncher-bigint.js';
+
+  let initWorker = () => {
+    numberCruncher = new Worker(workerFile);
+    numberCruncher.onmessage = numberCruncherReady;
+  };
 
   let formulaChanged = () => {
+    if (isCalculating) {
+      numberCruncher.terminate();
+      initWorker();
+      console.log(numberCruncher);
+    }
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
     msgEl.classList.remove('hide');
     msgEl.classList.remove('error');
+    outputPaneEl.classList.add('greyout');
     loaderIconEl.classList.remove('hidden');
     const expressions = inEl.value.split('\n');
     t0 = Date.now();
@@ -67,6 +79,7 @@
       loaderIconEl.classList.add('hidden');
     }
     else if (msg.data.results) {
+      outputPaneEl.classList.remove('greyout');
       results = msg.data.results;
       msgEl.innerHTML = '';
       const dtPost = Date.now() - t0 - msg.data.dtCalc - msg.data.dtRender;
@@ -113,7 +126,6 @@
   };
 
   let init = () => {
-    let workerFile = 'numbercruncher-bigint.js';
     try {
       let x = BigInt(0);
     }
@@ -127,11 +139,11 @@
     inEl.addEventListener('input', formulaChanged);
     outputPaneEl = document.getElementById('output-pane');
     msgEl = document.getElementById('msg');
+    msgEl.innerHTML = '';
     baseFormEl = document.getElementById('base-form');
     document.getElementById(`base-${base}`).checked = true;
     baseFormEl.addEventListener('change', baseChanged);
-    numberCruncher = new Worker(workerFile);
-    numberCruncher.onmessage = numberCruncherReady;
+    initWorker();
     window.addEventListener('keyup', event => {
       switch (event.key) {
         case 'F1':

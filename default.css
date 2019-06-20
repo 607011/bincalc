@@ -63,6 +63,14 @@ input[type="radio"] + label {
 
 p {
   margin: 5pt auto;
+  margin-block-start: 0em;
+  margin-block-end: 0em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+}
+
+.msg-container {
+  background-color:rgb(238, 143, 0);
 }
 
 #msg {
@@ -96,6 +104,10 @@ p {
   animation-name: hide;
   animation-timing-function: ease;
   animation-fill-mode: forwards;
+}
+
+.greyout {
+  opacity: 0.5;
 }
 
 table {
@@ -141,7 +153,6 @@ tfoot td {
 header, footer {
   left: 0;
   right: 0;
-  padding: 0 8pt;
   background-color: #333;
   color: #eee;
 }
@@ -153,7 +164,10 @@ header {
 footer {
   position: fixed;
   bottom: 0;
-  border-top: 1px solid #222;
+}
+
+footer > p {
+  padding: 0 0.5em;
 }
 
 footer a {

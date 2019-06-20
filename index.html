@@ -36,7 +36,8 @@
   <div class="app">
     <div id="overlay" class="hidden"></div>
     <p>
-      <textarea id="input" placeholder="type formula here, e.g. 'b1001 ^ x0f' to XOR a binary with a hexadecimal value"></textarea>
+      <textarea id="input"
+        placeholder="type formula here, e.g. 'b1001 ^ x0f' to XOR a binary with a hexadecimal value"></textarea>
     </p>
     <p>
       <div id="output-pane"></div>
@@ -55,7 +56,7 @@
     </p>
   </div>
   <footer>
-    <p style="border-bottom: 1px solid #888">
+    <p class="msg-container">
       <span id="loader-icon" class="hidden">
         <svg width="17" height="17" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
           <circle cx="8" cy="8" r="2" stroke-opacity="0" fill="none" stroke="#fff">
@@ -68,7 +69,7 @@
           </circle>
         </svg>
       </span>
-      <span id="msg"></span>
+      <span id="msg">Loading&nbsp;&hellip;</span>
     </p>
     <p><span style="font-size: smaller">
         <a href="https://github.com/ola-ct/bincalc" target="_blank">v1.0-BETA</a>
