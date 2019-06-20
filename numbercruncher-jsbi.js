@@ -116,7 +116,7 @@ Token.Functions = {
       let shift = Two;
       let nShifted = JSBI.signedRightShift(a, shift);
       while (!JSBI.equal(nShifted, JSBI.__zero()) && !JSBI.equal(nShifted, a)) {
-        shift += JSBI.BigInt(2);
+        shift += Two;
         nShifted = JSBI.signedRightShift(a, shift);
       }
       shift -= Two;
