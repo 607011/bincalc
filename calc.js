@@ -97,15 +97,15 @@
   };
 
   let init = () => {
-    let workerFile = 'numbercruncher.js';
-    overlayEl = document.getElementById('overlay');
+    let workerFile = 'numbercruncher-bigint.js';
     try {
       let x = BigInt(0);
     }
     catch (e) {
-      workerFile = 'numbercruncher-jsbi.js'
-      console.debug('BigInt not supported. Falling back to JSBI.');
+      workerFile = 'numbercruncher-jsbi.js';
+      console.log('BigInt not supported. Falling back to JSBI.');
     }
+    overlayEl = document.getElementById('overlay');
     loaderIconEl = document.getElementById('loader-icon');
     inEl = document.getElementById('input');
     inEl.addEventListener('input', formulaChanged);
