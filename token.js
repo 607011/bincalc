@@ -87,3 +87,50 @@ Token.Types = [
   { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
   { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
 ];
+
+
+
+let tokenize = str => {
+  let expr = str.replace(/\s+/g, '');
+  let tokens = [];
+  while (expr.length > 0) {
+    let found = false;
+    for (let i = 0; i < Token.Types.length && !found; ++i) {
+      let t = Token.Types[i];
+      let m = expr.match(t.regex);
+      if (m && m.length > 0) {
+        let symbol = m[1];
+        let len = m[0].length;
+        let value;
+        switch (t.type) {
+          case Token.Type.Literal:
+            try {
+              if (typeof JSBI !== 'function') {
+                value = BigInt(Token.BasePrefix[t.base] + symbol);
+              }
+              else {
+                value = JSBI.BigInt(Token.BasePrefix[t.base] + symbol);
+              }
+            }
+            catch (e) {
+              return { error: e };
+            }
+            break;
+          default:
+            if (symbol === '-' && (tokens.length === 0 || tokens.last().type === Token.Type.LeftParenthesis || (tokens.last().value in Token.Operators))) {
+              symbol = Token.Symbols.UnaryMinus;
+            }
+            value = symbol;
+            break;
+        }
+        tokens.push(new Token(t.type, value));
+        expr = expr.substring(len);
+        found = true;
+      }
+    }
+    if (!found) {
+      return { error: `invalid expression: ${str}` };
+    }
+  }
+  return { tokens: tokens };
+}

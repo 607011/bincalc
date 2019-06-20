@@ -4,7 +4,7 @@
 
 // ensure that JSBI is defined when using the message handler in browsers with BigInt support
 if (typeof JSBI !== 'function') {
-  self.JSBI = function() { /* ... */};
+  self.JSBI = self;
 }
 
 onmessage = event => {
