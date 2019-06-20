@@ -73,148 +73,150 @@ Token.Functions = {
 };
 
 
-let variables = {};
-let results = [];
-
-
-let calculate = expr => {
-  let { tokens, error } = tokenize(expr);
-  if (error) {
-    return { error: error };
+class Calculator {
+  constructor() {
+    this.variables = {};
   }
-  if (tokens) {
-    const s = new Stack();
-    const rpnTokens = shuntingYard(tokens);
-    for (const t of rpnTokens) {
-      if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
-        s.push(t);
-      }
-      else if (t.type === Token.Type.Function) {
-        const n = Token.Functions[t.value].n;
-        const f = Token.Functions[t.value].f;
-        if (s.length < n) {
-          return { result: undefined };
+
+  calculate(expr) {
+    let { tokens, error } = tokenize(expr);
+    if (error) {
+      return { error: error };
+    }
+    if (tokens) {
+      const s = new Stack();
+      const rpnTokens = shuntingYard(tokens);
+      for (const t of rpnTokens) {
+        if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
+          s.push(t);
         }
-        const args = (function(s, n) {
-          let args = [];
-          for (let i = 0; i < n; ++i) {
-            const token = s.pop();
-            if (token instanceof Token) {
-              const value = (token.type === Token.Type.Literal)
-              ? token.value
-              : variables[token.value];
-              if (value instanceof Array) {
-                args.unshift(value);
+        else if (t.type === Token.Type.Function) {
+          const n = Token.Functions[t.value].n;
+          const f = Token.Functions[t.value].f;
+          if (s.length < n) {
+            return { result: undefined };
+          }
+          const args = (function(s, n) {
+            let args = [];
+            for (let i = 0; i < n; ++i) {
+              const token = s.pop();
+              if (token instanceof Token) {
+                const value = (token.type === Token.Type.Literal)
+                ? token.value
+                : this.variables[token.value];
+                if (value instanceof Array) {
+                  args.unshift(value);
+                }
+                else {
+                  return { error: `***undefined variable '${token.value}'` };
+                }
               }
               else {
-                return { error: `***undefined variable '${token.value}'` };
+                return { error: 'illegal token' };
               }
             }
-            else {
-              return { error: 'illegal token' };
+            return args;
+          })(s, n);
+          if (args instanceof Array) {
+            try {
+              const r = f(...args);
+              s.push(new Token(Token.Type.Literal, r));
+            }
+            catch (e) {
+              return { error: e };
             }
           }
-          return args;
-        })(s, n);
-        if (args instanceof Array) {
-          try {
-            const r = f(...args);
-            s.push(new Token(Token.Type.Literal, r));
+          else {
+            return { error: args.error };
           }
-          catch (e) {
-            return { error: e };
+        }
+        else if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
+          if (s.top) {
+            switch (s.top.type) {
+              case Token.Type.Literal:
+                s.top.value = JSBI.unaryMinus(s.top.value);
+                break;
+              case Token.Type.Variable:
+                s.top.value = JSBI.unaryMinus(this.variables[s.top.value]);
+                s.top.type = Token.Type.Literal;
+                break;
+              default:
+                break;
+            }
           }
         }
         else {
-          return { error: args.error };
-        }
-      }
-      else if (t.type === Token.Type.Operator && t.value === Token.Symbols.UnaryMinus) {
-        if (s.top) {
-          switch (s.top.type) {
-            case Token.Type.Literal:
-              s.top.value = JSBI.unaryMinus(s.top.value);
-              break;
-            case Token.Type.Variable:
-              s.top.value = JSBI.unaryMinus(variables[s.top.value]);
-              s.top.type = Token.Type.Literal;
-              break;
-            default:
-              break;
+          const bToken = s.pop();
+          const aToken = s.pop();
+          if (aToken instanceof Token && bToken instanceof Token) {
+            if (bToken.type === Token.Type.Variable && !this.variables.hasOwnProperty(bToken.value)) {
+              return { error: `undefined variable '${bToken.value}'` };
+            }
+            let a = (aToken.type === Token.Type.Literal)
+              ? aToken.value
+              : this.variables[aToken.value];
+            let b = (bToken.type === Token.Type.Literal)
+              ? bToken.value
+              : this.variables[bToken.value];
+            let r;
+            try {
+              switch (t.value) {
+                case '=': this.variables[aToken.value] = b; break;
+                case '+=': this.variables[aToken.value] = JSBI.add(a, b); break;
+                case '-=': this.variables[aToken.value] = JSBI.subtract(a, b); break;
+                case '/=': this.variables[aToken.value] = JSBI.divide(a, b); break;
+                case '%=': this.variables[aToken.value] = JSBI.remainder(a, b); break;
+                case '*=': this.variables[aToken.value] = JSBI.multiply(a, b); break;
+                case '<<=': this.variables[aToken.value] = JSBI.leftShift(a, b); break;
+                case '>>=': this.variables[aToken.value] = JSBI.signedRightShift(a, b); break;
+                case '&=': this.variables[aToken.value] = JSBI.bitwiseAnd(a, b); break;
+                case '|=': this.variables[aToken.value] = JSBI.bitwiseOr(a, b); break;
+                case '^=': this.variables[aToken.value] = JSBI.bitwiseXor(a, b); break;
+                case '+': r = JSBI.add(a, b); break;
+                case '-': r = JSBI.subtract(a, b); break;
+                case '*': r = JSBI.multiply(a, b); break;
+                case '**': r = JSBI.exponentiate(a, b); break;
+                case '/': r = JSBI.divide(a, b); break;
+                case '%': r = JSBI.remainder(a, b); break;
+                case '^': r = JSBI.bitwiseXor(a, b); break;
+                case '|': r = JSBI.bitwiseOr(a, b); break;
+                case '&': r = JSBI.bitwiseAnd(a, b); break;
+                case '<<': r = JSBI.leftShift(a, b); break;
+                case '>>': r = JSBI.signedRightShift(a, b); break;
+                case '<': r = JSBI.lessThan(a, b) ? TRUE : FALSE; break;
+                case '>': r = JSBI.greaterThan(a, b) ? TRUE : FALSE; break;
+                case '<=': r = JSBI.lessThanOrEqual(a, b) ? TRUE : FALSE; break;
+                case '>=': r = JSBI.greaterThanOrEqual(a, b) ? TRUE : FALSE; break;
+                case '==': r = JSBI.equal(a, b) ? TRUE : FALSE; break;
+                case '!=': r = JSBI.equal(a, b) ? FALSE : TRUE; break;
+                case ',': break;
+                default: return { error: `unknown operator: ${t.value}` };
+              }
+            }
+            catch (e) {
+              return { error: `invalid expression (${e.name}) ${e.message || ''}` };
+            }
+            if (r instanceof Array) {
+              s.push(new Token(Token.Type.Literal, r));
+            }
           }
         }
+      }
+      if (s.length === 1) {
+        if (s.top.type === Token.Type.Variable) {
+          if (this.variables.hasOwnProperty(s.top.value)) {
+            return { result: this.variables[s.top.value] };
+          }
+          else {
+            return { error: `undefined variable '${s.top.value}'` }
+          }
+        }
+        return { result: s.top.value };
       }
       else {
-        const bToken = s.pop();
-        const aToken = s.pop();
-        if (aToken instanceof Token && bToken instanceof Token) {
-          if (bToken.type === Token.Type.Variable && !variables.hasOwnProperty(bToken.value)) {
-            return { error: `undefined variable '${bToken.value}'` };
-          }
-          let a = (aToken.type === Token.Type.Literal)
-            ? aToken.value
-            : variables[aToken.value];
-          let b = (bToken.type === Token.Type.Literal)
-            ? bToken.value
-            : variables[bToken.value];
-          let r;
-          try {
-            switch (t.value) {
-              case '=': variables[aToken.value] = b; break;
-              case '+=': variables[aToken.value] = JSBI.add(a, b); break;
-              case '-=': variables[aToken.value] = JSBI.subtract(a, b); break;
-              case '/=': variables[aToken.value] = JSBI.divide(a, b); break;
-              case '%=': variables[aToken.value] = JSBI.remainder(a, b); break;
-              case '*=': variables[aToken.value] = JSBI.multiply(a, b); break;
-              case '<<=': variables[aToken.value] = JSBI.leftShift(a, b); break;
-              case '>>=': variables[aToken.value] = JSBI.signedRightShift(a, b); break;
-              case '&=': variables[aToken.value] = JSBI.bitwiseAnd(a, b); break;
-              case '|=': variables[aToken.value] = JSBI.bitwiseOr(a, b); break;
-              case '^=': variables[aToken.value] = JSBI.bitwiseXor(a, b); break;
-              case '+': r = JSBI.add(a, b); break;
-              case '-': r = JSBI.subtract(a, b); break;
-              case '*': r = JSBI.multiply(a, b); break;
-              case '**': r = JSBI.exponentiate(a, b); break;
-              case '/': r = JSBI.divide(a, b); break;
-              case '%': r = JSBI.remainder(a, b); break;
-              case '^': r = JSBI.bitwiseXor(a, b); break;
-              case '|': r = JSBI.bitwiseOr(a, b); break;
-              case '&': r = JSBI.bitwiseAnd(a, b); break;
-              case '<<': r = JSBI.leftShift(a, b); break;
-              case '>>': r = JSBI.signedRightShift(a, b); break;
-              case '<': r = JSBI.lessThan(a, b) ? TRUE : FALSE; break;
-              case '>': r = JSBI.greaterThan(a, b) ? TRUE : FALSE; break;
-              case '<=': r = JSBI.lessThanOrEqual(a, b) ? TRUE : FALSE; break;
-              case '>=': r = JSBI.greaterThanOrEqual(a, b) ? TRUE : FALSE; break;
-              case '==': r = JSBI.equal(a, b) ? TRUE : FALSE; break;
-              case '!=': r = JSBI.equal(a, b) ? FALSE : TRUE; break;
-              case ',': break;
-              default: return { error: `unknown operator: ${t.value}` };
-            }
-          }
-          catch (e) {
-            return { error: `invalid expression (${e.name}) ${e.message || ''}` };
-          }
-          if (r instanceof Array) {
-            s.push(new Token(Token.Type.Literal, r));
-          }
-        }
+        return { result: undefined };
       }
     }
-    if (s.length === 1) {
-      if (s.top.type === Token.Type.Variable) {
-        if (variables.hasOwnProperty(s.top.value)) {
-          return { result: variables[s.top.value] };
-        }
-        else {
-          return { error: `undefined variable '${s.top.value}'` }
-        }
-      }
-      return { result: s.top.value };
-    }
-    else {
-      return { result: undefined };
-    }
+    return { error: 'invalid expression' };
   }
-  return { error: 'invalid expression' };
-};
+}

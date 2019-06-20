@@ -14,10 +14,10 @@ onmessage = event => {
   const base = event.data.base;
   let errorFound = false;
   let results = [];
-  variables = {};
+  let calculator = new Calculator();
   for (const expr of expressions) {
     const calcT0 = Date.now();
-    const { result, error } = calculate(expr);
+    const { result, error } = calculator.calculate(expr);
     dtCalc += Date.now() - calcT0;
     if (error) {
       errorFound = true;
