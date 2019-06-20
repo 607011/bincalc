@@ -166,7 +166,7 @@ footer {
   bottom: 0;
 }
 
-footer > p {
+footer > p, header > h1 {
   padding: 0 0.5em;
 }
 
