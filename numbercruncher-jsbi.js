@@ -72,9 +72,15 @@ Token.Functions = {
   },
 };
 
+
 class Calculator {
+
   constructor() {
-    this.variables = {};
+    this._variables = {};
+  }
+
+  get variables() {
+    return this._variables;
   }
 
   calculate(expr) {
@@ -102,7 +108,7 @@ class Calculator {
               if (token instanceof Token) {
                 const value = (token.type === Token.Type.Literal)
                 ? token.value
-                : this.variables[token.value];
+                : this._variables[token.value];
                 if (value instanceof Array) {
                   args.unshift(value);
                 }
@@ -136,7 +142,7 @@ class Calculator {
                 s.top.value = JSBI.unaryMinus(s.top.value);
                 break;
               case Token.Type.Variable:
-                s.top.value = JSBI.unaryMinus(this.variables[s.top.value]);
+                s.top.value = JSBI.unaryMinus(this._variables[s.top.value]);
                 s.top.type = Token.Type.Literal;
                 break;
               default:
@@ -148,29 +154,29 @@ class Calculator {
           const bToken = s.pop();
           const aToken = s.pop();
           if (aToken instanceof Token && bToken instanceof Token) {
-            if (bToken.type === Token.Type.Variable && !this.variables.hasOwnProperty(bToken.value)) {
+            if (bToken.type === Token.Type.Variable && !this._variables.hasOwnProperty(bToken.value)) {
               return { error: `undefined variable '${bToken.value}'` };
             }
             let a = (aToken.type === Token.Type.Literal)
               ? aToken.value
-              : this.variables[aToken.value];
+              : this._variables[aToken.value];
             let b = (bToken.type === Token.Type.Literal)
               ? bToken.value
-              : this.variables[bToken.value];
+              : this._variables[bToken.value];
             let r;
             try {
               switch (t.value) {
-                case '=': this.variables[aToken.value] = b; break;
-                case '+=': this.variables[aToken.value] = JSBI.add(a, b); break;
-                case '-=': this.variables[aToken.value] = JSBI.subtract(a, b); break;
-                case '/=': this.variables[aToken.value] = JSBI.divide(a, b); break;
-                case '%=': this.variables[aToken.value] = JSBI.remainder(a, b); break;
-                case '*=': this.variables[aToken.value] = JSBI.multiply(a, b); break;
-                case '<<=': this.variables[aToken.value] = JSBI.leftShift(a, b); break;
-                case '>>=': this.variables[aToken.value] = JSBI.signedRightShift(a, b); break;
-                case '&=': this.variables[aToken.value] = JSBI.bitwiseAnd(a, b); break;
-                case '|=': this.variables[aToken.value] = JSBI.bitwiseOr(a, b); break;
-                case '^=': this.variables[aToken.value] = JSBI.bitwiseXor(a, b); break;
+                case '=': this._variables[aToken.value] = b; break;
+                case '+=': this._variables[aToken.value] = JSBI.add(a, b); break;
+                case '-=': this._variables[aToken.value] = JSBI.subtract(a, b); break;
+                case '/=': this._variables[aToken.value] = JSBI.divide(a, b); break;
+                case '%=': this._variables[aToken.value] = JSBI.remainder(a, b); break;
+                case '*=': this._variables[aToken.value] = JSBI.multiply(a, b); break;
+                case '<<=': this._variables[aToken.value] = JSBI.leftShift(a, b); break;
+                case '>>=': this._variables[aToken.value] = JSBI.signedRightShift(a, b); break;
+                case '&=': this._variables[aToken.value] = JSBI.bitwiseAnd(a, b); break;
+                case '|=': this._variables[aToken.value] = JSBI.bitwiseOr(a, b); break;
+                case '^=': this._variables[aToken.value] = JSBI.bitwiseXor(a, b); break;
                 case '+': r = JSBI.add(a, b); break;
                 case '-': r = JSBI.subtract(a, b); break;
                 case '*': r = JSBI.multiply(a, b); break;
@@ -203,8 +209,8 @@ class Calculator {
       }
       if (s.length === 1) {
         if (s.top.type === Token.Type.Variable) {
-          if (this.variables.hasOwnProperty(s.top.value)) {
-            return { result: this.variables[s.top.value] };
+          if (this._variables.hasOwnProperty(s.top.value)) {
+            return { result: this._variables[s.top.value] };
           }
           else {
             return { error: `undefined variable '${s.top.value}'` }

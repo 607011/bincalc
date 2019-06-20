@@ -32,6 +32,7 @@ onmessage = event => {
   if (!errorFound) {
     postMessage({
       results: results,
+      variables: calculator.variables,
       dtCalc: dtCalc,
       dtRender: dtRender,
     });
