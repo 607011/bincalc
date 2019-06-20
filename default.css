@@ -178,7 +178,7 @@ footer a:visited {
   color: #ccc;
 }
 
-#output-pane, textarea {
+#output-pane, #input-pane {
   background-color: white;
   color: black;
   font-family: 'Roboto Mono', monospace;
@@ -189,10 +189,18 @@ footer a:visited {
   border: 1px solid #444;
 }
 
+#input-pane {
+  min-height: 4ex;
+  word-break: break-all;
+  overflow-y: auto;
+  width: auto;
+}
+
 #output-pane {
   word-break: break-all;
   overflow-y: auto;
   width: auto;
+  max-height: 200px;
 }
 
 .result-container {

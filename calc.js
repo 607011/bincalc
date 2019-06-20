@@ -3,7 +3,7 @@
 (function (window) {
   'use strict';
 
-  let inEl = null;
+  let inputPaneEl = null;
   let msgEl = null;
   let overlayEl = null;
   let outputPaneEl = null;
@@ -32,7 +32,7 @@
     msgEl.classList.remove('error');
     outputPaneEl.classList.add('greyout');
     loaderIconEl.classList.remove('hidden');
-    const expressions = inEl.value.split('\n');
+    const expressions = inputPaneEl.innerText.split('\n');
     t0 = Date.now();
     isCalculating = true;
     numberCruncher.postMessage({
@@ -135,8 +135,8 @@
     }
     overlayEl = document.getElementById('overlay');
     loaderIconEl = document.getElementById('loader-icon');
-    inEl = document.getElementById('input');
-    inEl.addEventListener('input', formulaChanged);
+    inputPaneEl = document.getElementById('input-pane');
+    inputPaneEl.addEventListener('input', formulaChanged);
     outputPaneEl = document.getElementById('output-pane');
     msgEl = document.getElementById('msg');
     msgEl.innerHTML = '';
