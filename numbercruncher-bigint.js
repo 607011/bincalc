@@ -114,7 +114,7 @@ class Calculator {
               }
             }
             return args;
-          })(s, n);
+          }.bind(this))(s, n);
           if (args instanceof Array) {
             try {
               const r = f(...args);
