@@ -164,6 +164,7 @@ header {
 footer {
   position: fixed;
   bottom: 0;
+  vertical-align: middle;
 }
 
 footer > p, header > h1 {
@@ -187,6 +188,7 @@ footer a:visited {
   width: 100%;
   height: 30%;
   border: 1px solid #444;
+  margin-bottom: 1ex;
 }
 
 #input-pane {
