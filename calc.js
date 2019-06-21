@@ -33,6 +33,7 @@
       expressions: expressions,
       base: base
     });
+    fitOutputPane();
   };
 
   let baseChanged = event => {
@@ -144,7 +145,6 @@
       + document.getElementById('footer').offsetHeight
       + 8 * 4 - 1;
     outputPaneEl.style.height = `${window.innerHeight - h}px`;
-    console.log(outputPaneEl.style.height);
   };
 
   let onResize = () => {
