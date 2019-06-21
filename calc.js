@@ -54,6 +54,7 @@
 
   let visualResultFrom = result => {
     const containerEl = document.createElement('div');
+    containerEl.classList.add('result-container');
     const exprEl = document.createElement('span');
     exprEl.classList.add('expression');
     exprEl.innerHTML = `${result.expression} &rarr; `;

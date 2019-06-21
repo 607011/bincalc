@@ -52,8 +52,8 @@ input[type="radio"] + label {
 }
 
 #help-button {
-  font-size: smaller;
   cursor: pointer;
+  margin: 4px 4px 0 0;
 }
 
 .error {
@@ -199,6 +199,10 @@ tfoot td {
   overflow-y: scroll;
   width: auto;
   height: 24px;
+}
+
+.result-container {
+  margin-bottom: 4pt;
 }
 
 .expression {
