@@ -29,11 +29,6 @@ a:hover {
   text-decoration: underline;
 }
 
-.app {
-  padding: 5pt;
-  position: relative;
-}
-
 #overlay {
   position: fixed;
   width: 100%;
@@ -59,23 +54,6 @@ input[type="radio"] + label {
 #help-button {
   font-size: smaller;
   cursor: pointer;
-}
-
-p {
-  margin: 5pt auto;
-  margin-block-start: 0em;
-  margin-block-end: 0em;
-  margin-inline-start: 0px;
-  margin-inline-end: 0px;
-}
-
-.msg-container {
-  background-color:rgb(238, 143, 0);
-}
-
-#msg {
-  font-weight: bold;
-  vertical-align: middle;
 }
 
 .error {
@@ -108,6 +86,7 @@ p {
 
 .greyout {
   opacity: 0.5;
+  background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
 table {
@@ -150,33 +129,47 @@ tfoot td {
   }
 }
 
-header, footer {
-  left: 0;
-  right: 0;
+.app {
+  position: relative;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: stretch;
+  height: 100%;
+}
+
+.app > * {
+  padding: 5pt;
+  flex: 1 100%;
+}
+
+.header, .footer {
   background-color: #333;
   color: #eee;
-}
-
-header {
-  border-bottom: 1px solid #222;
-}
-
-footer {
-  position: fixed;
-  bottom: 0;
   vertical-align: middle;
 }
 
-footer > p, header > h1 {
-  padding: 0 0.5em;
+.header {
+  font-size: 15pt;
+  font-weight: bold;
 }
 
-footer a {
+.footer a {
   color: #ddd;
 }
 
-footer a:visited {
+.footer a:visited {
   color: #ccc;
+}
+
+.msg-container {
+  background-color:rgb(238, 143, 0);
+  color: white;
+  height: 3ex;
+  vertical-align: middle;
+}
+
+#msg {
+  vertical-align: middle;
 }
 
 #output-pane, #input-pane {
@@ -184,11 +177,8 @@ footer a:visited {
   color: black;
   font-family: 'Roboto Mono', monospace;
   font-size: 12pt;
-  padding: 4pt;
-  width: 100%;
-  height: 30%;
+  margin: 4pt;
   border: 1px solid #444;
-  margin-bottom: 1ex;
 }
 
 #input-pane {
@@ -198,11 +188,19 @@ footer a:visited {
   width: auto;
 }
 
+[contentEditable=true]:empty:not(:focus):before {
+  content:attr(data-text)
+}
+
 #output-pane {
   word-break: break-all;
-  overflow-y: auto;
+  overflow-y: scroll;
   width: auto;
-  max-height: 200px;
+  flex: 2 0px;
+}
+
+#output-pane:empty:not(:focus):before {
+  content:attr(data-text)
 }
 
 .result-container {

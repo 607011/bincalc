@@ -24,25 +24,54 @@
   <meta name="author" content="Oliver Lau">
   <meta name="copyright" content="Oliver Lau, Heise Medien GmbH & Co. KG">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono|Saira+Semi+Condensed:400,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Mono|Saira+Semi+Condensed:400,700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" type="text/css" href="default.css" media="screen" />
   <script type="text/javascript" src="calc.js"></script>
   <link rel="icon" sizes="48x48" href="favicon-48.png">
 </head>
 
 <body>
-  <header>
-    <h1><span style="float: right;" id="help-button">❓</span>Arbitrary Precision Calculator</h1>
-  </header>
+  <div id="overlay" class="hidden"></div>
   <div class="app">
-    <div id="overlay" class="hidden"></div>
-    <p>
-      <div id="input-pane" contenteditable="true"></div>
-    </p>
-    <p>
-      <div id="output-pane"></div>
-    </p>
-    <p>
+    <div class="header"><span style="float: right;" id="help-button">
+        <svg width="24px" height="24px" viewBox="0 0 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/"
+          style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+          <circle cx="8.484" cy="8.515" r="8.477" style="fill:rgb(237,237,237);" />
+          <g transform="matrix(1.32226,0,0,1.32226,-4.343,3.88685)">
+            <g transform="matrix(12.1005,0,0,12.1005,5.96651,7.87529)">
+              <path
+                d="M0.367,-0.185L0.242,-0.185C0.242,-0.202 0.242,-0.213 0.242,-0.217C0.242,-0.258 0.248,-0.291 0.262,-0.317C0.275,-0.343 0.302,-0.372 0.342,-0.405C0.382,-0.437 0.406,-0.459 0.414,-0.469C0.426,-0.485 0.432,-0.502 0.432,-0.521C0.432,-0.548 0.421,-0.571 0.4,-0.59C0.378,-0.609 0.35,-0.619 0.313,-0.619C0.279,-0.619 0.25,-0.609 0.226,-0.589C0.203,-0.569 0.187,-0.539 0.178,-0.498L0.052,-0.514C0.055,-0.572 0.08,-0.621 0.126,-0.662C0.172,-0.703 0.233,-0.723 0.308,-0.723C0.386,-0.723 0.449,-0.703 0.496,-0.661C0.542,-0.62 0.565,-0.572 0.565,-0.518C0.565,-0.487 0.557,-0.459 0.54,-0.432C0.523,-0.405 0.486,-0.368 0.43,-0.321C0.401,-0.297 0.383,-0.278 0.376,-0.263C0.369,-0.249 0.366,-0.222 0.367,-0.185ZM0.242,0L0.242,-0.137L0.379,-0.137L0.379,0L0.242,0Z"
+                style="fill:rgb(57,57,57);fill-rule:nonzero;" />
+            </g>
+          </g>
+        </svg>
+      </span>
+      Arbitrary Precision Calculator
+    </div>
+    <div class="msg-container">
+      <span id="loader-icon" class="hidden">
+        <svg width="17" height="17" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="8" cy="8" r="2" stroke-opacity="0" fill="none" stroke="#fff">
+            <animate attributeName="r" begin="1s" dur="2s" values="0;8" calcMode="linear" repeatCount="indefinite" />
+            <animate attributeName="stroke-opacity" begin="1s" dur="2s" values="1;0" calcMode="linear"
+              repeatCount="indefinite" />
+            <animate attributeName="stroke-width" begin="1s" dur="2s" values="2;1" calcMode="linear"
+              repeatCount="indefinite" />
+          </circle>
+          <circle cx="8" cy="8" r="2" fill="none" stroke="#fff">
+            <animate attributeName="r" begin="0s" dur="1s" values="6;1;2;4;6" calcMode="linear"
+              repeatCount="indefinite" />
+            <animate attributeName="stroke-width" begin="0s" dur="1s" values="1;0.5" calcMode="linear"
+              repeatCount="indefinite" />
+          </circle>
+        </svg>
+      </span>
+      <span id="msg"></span>
+    </div>
+    <div id="input-pane" contenteditable="true" data-text="Enter your arithmetic expressions here, one per line"></div>
+    <div>
       <form id="base-form">
         <strong>Output:</strong>
         <input id="base-2" name="base" type="radio" value="2"></input>
@@ -54,33 +83,17 @@
         <input id="base-16" name="base" type="radio" value="16"></input>
         <label for="base-16">hexadecimal</label>
       </form>
-    </p>
-  </div>
-  <footer>
-    <p class="msg-container">
-      <span id="loader-icon" class="hidden">
-        <svg width="17" height="17" viewBox="0 0 17 17" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="8" cy="8" r="2" stroke-opacity="0" fill="none" stroke="#fff">
-            <animate attributeName="r" begin="1s" dur="2s" values="0;8" calcMode="linear" repeatCount="indefinite" />
-            <animate attributeName="stroke-opacity" begin="1s" dur="2s" values="1;0" calcMode="linear" repeatCount="indefinite" />
-            <animate attributeName="stroke-width" begin="1s" dur="2s" values="2;1" calcMode="linear" repeatCount="indefinite" />
-          </circle>
-          <circle cx="8" cy="8" r="2" fill="none" stroke="#fff">
-            <animate attributeName="r" begin="0s" dur="1s" values="6;1;2;4;6" calcMode="linear" repeatCount="indefinite" />
-            <animate attributeName="stroke-width" begin="0s" dur="1s" values="1;0.5" calcMode="linear" repeatCount="indefinite" />
-          </circle>
-        </svg>
-      </span>
-      <span id="msg">Loading&nbsp;&hellip;</span>
-    </p>
-    <p><span style="font-size: smaller">
+    </div>
+    <div id="output-pane" data-text="The results will be displayed here"></div>
+    <div class="footer">
+      <span style="font-size: smaller">
         <a href="https://github.com/ola-ct/bincalc" target="_blank">v1.0-BETA</a>
         &ndash;
         Copyright &copy; 2019 <a href="mailto:ola@ct.de">Oliver Lau</a>, <a
           href="https://www.heise-gruppe.de/heise-medien.html" target="_blank">Heise Medien GmbH & Co. KG</a>, <a
-          href="https://ct.de/" target="_blank">Redaktion c't</a></span></p>
-
-  </footer>
+          href="https://ct.de/" target="_blank">Redaktion c't</a></span>
+    </div>
+  </div>
 </body>
 
 </html>
