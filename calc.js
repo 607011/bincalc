@@ -16,11 +16,6 @@
   let isCalculating = false;
   let workerFile = 'numbercruncher-bigint.js';
 
-  let initWorker = () => {
-    numberCruncher = new Worker(workerFile);
-    numberCruncher.onmessage = numberCruncherReady;
-  };
-
   let formulaChanged = () => {
     if (isCalculating) {
       numberCruncher.terminate();
@@ -61,7 +56,7 @@
     containerEl.classList.add('result-container');
     const exprEl = document.createElement('span');
     exprEl.classList.add('expression');
-    exprEl.innerHTML = `${result.expression} → `;
+    exprEl.innerHTML = `${result.expression} &rarr; `;
     const resultEl = document.createElement('span');
     resultEl.classList.add('result');
     resultEl.innerHTML = result.result;
@@ -98,6 +93,11 @@
     if (event.key === 'Escape') {
       overlayEl.classList.add('hidden');
     }
+  };
+
+  let initWorker = () => {
+    numberCruncher = new Worker(workerFile);
+    numberCruncher.onmessage = numberCruncherReady;
   };
 
   let terminateWorker = () => {
