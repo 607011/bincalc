@@ -25,7 +25,6 @@
     if (isCalculating) {
       numberCruncher.terminate();
       initWorker();
-      console.log(numberCruncher);
     }
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
     msgEl.classList.remove('hide');
