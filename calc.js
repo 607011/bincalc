@@ -5,6 +5,7 @@
 
   let inputPaneEl = null;
   let msgEl = null;
+  let msgContainerEl = null;
   let overlayEl = null;
   let outputPaneEl = null;
   let loaderIconEl = null;
@@ -23,7 +24,7 @@
     }
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
     msgEl.classList.remove('hide');
-    msgEl.classList.remove('error');
+    msgContainerEl.classList.remove('error');
     outputPaneEl.classList.add('greyout');
     loaderIconEl.classList.remove('hidden');
     const expressions = inputPaneEl.innerText.split('\n');
@@ -70,16 +71,17 @@
     isCalculating = false;
     if (msg.data.error) {
       msgEl.innerHTML = msg.data.error;
-      msgEl.classList.add('error');
+      msgContainerEl.classList.add('error');
       loaderIconEl.classList.add('hidden');
     }
     else if (msg.data.results) {
+      msgContainerEl.classList.remove('error');
       outputPaneEl.classList.remove('greyout');
       results = msg.data.results;
       msgEl.innerHTML = '';
       const dtPost = Date.now() - t0 - msg.data.dtCalc - msg.data.dtRender;
+      outputPaneEl.innerHTML = '';
       if (results && results.length > 0) {
-        outputPaneEl.innerHTML = '';
         for (const result of results) {
           outputPaneEl.appendChild(visualResultFrom(result))
         }
@@ -165,6 +167,7 @@
     inputPaneEl = document.getElementById('input-pane');
     inputPaneEl.addEventListener('input', formulaChanged);
     outputPaneEl = document.getElementById('output-pane');
+    msgContainerEl = document.getElementById('msg-container');
     msgEl = document.getElementById('msg');
     msgEl.innerHTML = '';
     baseFormEl = document.getElementById('base-form');

@@ -192,7 +192,7 @@ class Calculator {
               }
             }
             catch (e) {
-              return { error: `invalid expression (${e.name}) ${e.message || ''}` };
+              return { error: `${e.name}: ${e.message || ''}` };
             }
             if (typeof r === 'bigint') {
               s.push(new Token(Token.Type.Literal, r));
