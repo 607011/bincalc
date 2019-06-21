@@ -82,7 +82,9 @@
         for (const result of results) {
           outputPaneEl.appendChild(visualResultFrom(result))
         }
-        msgEl.innerHTML = `${msToStr(msg.data.dtCalc)} to calculate, ${msToStr(dtPost)} to transfer, ${msToStr(msg.data.dtRender)} to convert to base ${base}.`;
+        msgEl.innerHTML = `${msToStr(msg.data.dtCalc)} to calculate,
+          ${msToStr(dtPost)} to transfer,
+          ${msToStr(msg.data.dtRender)} to convert to base ${base}.`;
         msgEl.classList.add('hide');
       }
       loaderIconEl.classList.add('hidden');
