@@ -138,8 +138,9 @@ tfoot td {
 }
 
 .app > * {
-  padding: 5pt;
-  flex: 1 100%;
+  padding: 4px;
+  flex-grow: 1;
+  flex-basis: 100%;
 }
 
 .header, .footer {
@@ -197,11 +198,7 @@ tfoot td {
   word-break: break-all;
   overflow-y: scroll;
   width: auto;
-  flex: 2 0px;
-}
-
-.result-container {
-  margin-bottom: 1ex;
+  height: 24px;
 }
 
 .expression {

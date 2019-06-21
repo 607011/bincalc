@@ -53,7 +53,6 @@
 
   let visualResultFrom = result => {
     const containerEl = document.createElement('div');
-    containerEl.classList.add('result-container');
     const exprEl = document.createElement('span');
     exprEl.classList.add('expression');
     exprEl.innerHTML = `${result.expression} &rarr; `;
@@ -126,6 +125,32 @@
     }
   };
 
+  let onKeyUp = event => {
+    switch (event.key) {
+      case 'F1':
+        toggleHelp();
+        break;
+      case 'Escape':
+        terminateWorker();
+        break;
+    }
+  };
+
+  let fitOutputPane = () => {
+    const h = document.getElementById('header').offsetHeight
+      + document.getElementById('msg-container').offsetHeight
+      + document.getElementById('input-pane').offsetHeight
+      + document.getElementById('base-selector').offsetHeight
+      + document.getElementById('footer').offsetHeight
+      + 8 * 4 - 1;
+    outputPaneEl.style.height = `${window.innerHeight - h}px`;
+    console.log(outputPaneEl.style.height);
+  };
+
+  let onResize = () => {
+    fitOutputPane();
+  };
+
   let init = () => {
     try {
       let x = BigInt(0);
@@ -145,16 +170,8 @@
     document.getElementById(`base-${base}`).checked = true;
     baseFormEl.addEventListener('change', baseChanged);
     initWorker();
-    window.addEventListener('keyup', event => {
-      switch (event.key) {
-        case 'F1':
-          toggleHelp();
-          break;
-        case 'Escape':
-          terminateWorker();
-          break;
-      }
-    });
+    window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('resize', onResize);
     fetch('help.html')
       .then(response => {
         response.body.getReader().read()
@@ -163,6 +180,7 @@
         });
         document.getElementById('help-button').addEventListener('click', toggleHelp);
       });
+    fitOutputPane();
   };
 
   window.addEventListener('load', init);
