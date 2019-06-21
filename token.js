@@ -135,7 +135,7 @@ let tokenize = expr => {
       }
     }
     if (!found) {
-      return { error: `invalid expression: ${str}` };
+      return { error: `invalid expression: ${expr}` };
     }
   }
   return { tokens: tokens };
