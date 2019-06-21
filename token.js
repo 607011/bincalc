@@ -116,7 +116,14 @@ let tokenize = expr => {
             }
             break;
           default:
-            if (symbol === '-' && (tokens.length === 0 || tokens.last.type === Token.Type.LeftParenthesis || (tokens.last.value in Token.Operators))) {
+            if (symbol === '-'
+              &&
+              (
+                tokens.length === 0 ||
+                tokens.last.type === Token.Type.LeftParenthesis ||
+                Token.Operators.indexOf(tokens.last.value) >= 0
+              )
+            ) {
               symbol = Token.Symbols.UnaryMinus;
             }
             value = symbol;
