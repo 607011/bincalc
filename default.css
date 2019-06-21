@@ -188,8 +188,9 @@ tfoot td {
   width: auto;
 }
 
-[contentEditable=true]:empty:not(:focus):before {
-  content:attr(data-text)
+#input-pane:empty:not(:focus):before, #output-pane:empty:not(:focus):before {
+  content: attr(data-text);
+  color: #999;
 }
 
 #output-pane {
@@ -197,10 +198,6 @@ tfoot td {
   overflow-y: scroll;
   width: auto;
   flex: 2 0px;
-}
-
-#output-pane:empty:not(:focus):before {
-  content:attr(data-text)
 }
 
 .result-container {
