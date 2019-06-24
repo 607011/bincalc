@@ -13,7 +13,7 @@
   let base = localStorage.getItem('base') || 2;
   let results = [];
   let numberCruncher = null;
-  let t0 = 0;
+  let t0Post = 0;
   let isCalculating = false;
   let workerFile = 'numbercruncher-bigint.js';
 
@@ -28,7 +28,7 @@
     outputPaneEl.classList.add('greyout');
     loaderIconEl.classList.remove('hidden');
     const expressions = inputPaneEl.innerText.split('\n');
-    t0 = Date.now();
+    t0Post = Date.now();
     isCalculating = true;
     numberCruncher.postMessage({
       expressions: expressions,
@@ -79,7 +79,7 @@
       outputPaneEl.classList.remove('greyout');
       results = msg.data.results;
       msgEl.innerHTML = '';
-      const dtPost = Date.now() - t0 - msg.data.dtCalc - msg.data.dtRender;
+      const dtPost = Date.now() - t0Post - msg.data.dtCalc - msg.data.dtRender;
       outputPaneEl.innerHTML = '';
       if (results && results.length > 0) {
         for (const result of results) {
