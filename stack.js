@@ -15,16 +15,21 @@ class Stack {
   push(value) { this._stack.push(value); }
   pop() { return this._stack.pop(); }
   get top() { return this._stack.last; }
-  set top(v) { this._stack[this._stack.length - 1] = v; }
+  set top(v) { this._stack.last = v; }
   get length() { return this._stack.length; }
   [Symbol.iterator]() {
     return {
       next: () => {
         if (this._nextIndex < this.length) {
-          return { value: this._stack[this._nextIndex++], done: false };
+          return {
+            value: this._stack[this._nextIndex++],
+            done: false
+          };
         }
         this._nextIndex = 0;
-        return { done: true };
+        return {
+          done: true
+        };
       }
     }
   }
