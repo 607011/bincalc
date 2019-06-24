@@ -120,9 +120,9 @@
       overlayEl.classList.remove('hidden');
       document.getElementById('help-back').addEventListener('click', () => {
         overlayEl.classList.add('hidden');
-        window.removeEventListener('keydown', overlayKeyDown, {once: true, capture: true});
-      }, {once: true, capture: true});
-      window.addEventListener('keydown', overlayKeyDown, {once: true, capture: true});
+        window.removeEventListener('keydown', overlayKeyDown, { once: true, capture: true });
+      }, { once: true, capture: true });
+      window.addEventListener('keydown', overlayKeyDown, { once: true, capture: true });
     }
     else {
       overlayEl.classList.add('hidden');
@@ -138,6 +138,24 @@
         terminateWorker();
         break;
     }
+  };
+
+  let onKeyDown = event => {
+    switch (event.key) {
+      case 'v':
+        if (typeof navigator.clipboard.readText === 'function' && (event.metaKey || event.ctrlKey)) {
+          navigator.clipboard.readText()
+            .then(clipboardText => {
+              document.execCommand('insertText', false, clipboardText);
+            });
+          event.stopPropagation();
+          event.preventDefault();
+        }
+        break;
+      default:
+        break;
+    }
+    return false;
   };
 
   let fitOutputPane = () => {
@@ -175,17 +193,28 @@
     baseFormEl.addEventListener('change', baseChanged);
     initWorker();
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('keydown', onKeyDown);
     window.addEventListener('resize', onResize);
     fetch('help.html')
       .then(response => {
         response.body.getReader().read()
-        .then(html => {
-          overlayEl.innerHTML = new TextDecoder('utf-8').decode(html.value);
-        });
+          .then(html => {
+            overlayEl.innerHTML = new TextDecoder('utf-8').decode(html.value);
+          });
         document.getElementById('help-button').addEventListener('click', toggleHelp);
       });
     fitOutputPane();
+    if (typeof navigator.clipboard.readText === 'undefined') {
+      inputPaneEl.addEventListener('paste', event => {
+        let clipboardData = event.clipboardData || window.clipboardData;
+        let pastedData = clipboardData.getData('Text');
+        let parser = new DOMParser().parseFromString(pastedData, 'text/html');
+        let clipboardText = parser.body.textContent || '';
+        document.execCommand('insertText', false, clipboardText);
+        event.preventDefault();
+        event.stopPropagation();
+      });
+    }
   };
-
   window.addEventListener('load', init);
 })(window);
