@@ -77,14 +77,6 @@ input[type="radio"] + label {
   vertical-align: middle;
 }
 
-.hide {
-  animation-delay: 3s;
-  animation-duration: 340ms;
-  animation-name: hide;
-  animation-timing-function: ease;
-  animation-fill-mode: forwards;
-}
-
 .greyout {
   opacity: 0.5;
   background-color: rgba(0, 0, 0, 0.8) !important;
@@ -119,15 +111,6 @@ th {
 
 tfoot td {
   font-size: smaller;
-}
-
-@keyframes hide {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
 }
 
 .app {

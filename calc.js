@@ -23,7 +23,6 @@
       initWorker();
     }
     msgEl.innerHTML = 'Calculating&nbsp;&hellip;';
-    msgEl.classList.remove('hide');
     msgContainerEl.classList.remove('error');
     outputPaneEl.classList.add('greyout');
     loaderIconEl.classList.remove('hidden');
@@ -88,7 +87,6 @@
         msgEl.innerHTML = `${msToStr(msg.data.dtCalc)} to calculate,
           ${msToStr(dtPost)} to transfer,
           ${msToStr(msg.data.dtRender)} to convert to base ${base}.`;
-        msgEl.classList.add('hide');
       }
       loaderIconEl.classList.add('hidden');
     }
@@ -110,8 +108,7 @@
       isCalculating = false;
       numberCruncher.terminate();
       numberCruncher = new Worker('numbercruncher.js');
-      msgEl.classList.add('hide');
-      loaderIconEl.classList.add('hide');
+      loaderIconEl.classList.add('hidden');
     }
   };
 
