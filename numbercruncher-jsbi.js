@@ -2,7 +2,7 @@
 
 'use strict';
 
-importScripts('jsbi.js', 'stack.js', 'token.js', 'shunting-yard.js', 'worker-message-handler.js');
+importScripts('jsbi.js', 'shunting-yard.js', 'worker-message-handler.js');
 
 const TRUE = JSBI.BigInt(1), FALSE = JSBI.BigInt(0);
 

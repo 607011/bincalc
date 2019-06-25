@@ -2,7 +2,7 @@
 
 'use strict';
 
-importScripts('token.js', 'stack.js', 'shunting-yard.js', 'worker-message-handler.js');
+importScripts('shunting-yard.js', 'worker-message-handler.js');
 
 const TRUE = 1n, FALSE = 0n;
 
