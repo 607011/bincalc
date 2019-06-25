@@ -53,10 +53,10 @@ Token.Functions = {
       let shift = Two;
       let nShifted = JSBI.signedRightShift(a, shift);
       while (!JSBI.equal(nShifted, JSBI.__zero()) && !JSBI.equal(nShifted, a)) {
-        shift += Two;
+        shift = JSBI.add(shift, Two);
         nShifted = JSBI.signedRightShift(a, shift);
       }
-      shift -= Two;
+      shift = JSBI.subtract(shift, Two);
       let result = JSBI.__zero();
       while (JSBI.greaterThanOrEqual(shift, JSBI.__zero())) {
         result = JSBI.leftShift(result, One);
