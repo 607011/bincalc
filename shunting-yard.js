@@ -183,8 +183,8 @@ let tokenize = expr => {
                 value = JSBI.BigInt(Token.BasePrefix[t.base] + symbol);
               }
             }
-            catch (e) {
-              return { error: e };
+            catch (error) {
+              return { error };
             }
             break;
           default:
@@ -210,7 +210,7 @@ let tokenize = expr => {
       return { error: `invalid expression: ${expr}` };
     }
   }
-  return { tokens: tokens };
+  return { tokens };
 }
 
 // The Shunting-Yard algorithm takes a list of tokens and rearranges them
