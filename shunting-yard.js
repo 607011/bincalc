@@ -1,15 +1,28 @@
 // Copyright (c) 2019 Oliver Lau <ola@ct.de>, Heise Medien GmbH & Co. KG
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or (at
+// your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see http://www.gnu.org/licenses/.
 
 'use strict';
 
-
-// Set or get the last element in an array
+// Set or get the last element in an array.
 Object.defineProperty(Array.prototype, 'last', {
   get: function() { return this[this.length-1]; },
   set: function(v) { this[this.length-1] = v; },
 });
 
-// Stack represents a classic stack from which you can pop items or push items onto it.
+// Stack represents a classic stack from which you can pop items
+// or push items onto it.
 class Stack {
   constructor() {
     this._stack = [];
@@ -39,10 +52,11 @@ class Stack {
   }
 }
 
-// LEFT and RIGHT are constants to determine whether a token in an expression is left- or right-associative
+// LEFT and RIGHT are constants to determine whether a token
+// in an expression is left- or right-associative.
 const LEFT = -1, RIGHT = +1;
 
-// Token represents an operator, variable or constant value
+// Token represents an operator, variable or constant value.
 class Token {
   constructor(type, value) {
     this._type = type;
@@ -60,7 +74,8 @@ class Token {
   }
 }
 
-// Token.Type is an object containing the name of a token (key) with an associated value
+// Token.Type is an object containing the name of a token (key)
+// with an associated value.
 Token.Type = (types => {
   let obj = {};
   for (const i in types) {
@@ -71,13 +86,16 @@ Token.Type = (types => {
 
 Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
 
-// Token.Operators contains the list of valid operators
+// Token.Operators contains the list of valid operators.
 Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', '^', '&', '|', '+', '-', '**', '*', '/', '%', '<<', '>>', '==', '!=', '<=', '>=', '>', '<', '=', ','];
 
-// There are special operators which are not recognized by the tokenizer but later on must represent a symbol with a new meaning. Currently, only the unary minus belongs to these operators.
+// There are special operators which are not recognized by the
+// tokenizer but later on must represent a symbol with a new meaning.
+// Currently, only the unary minus belongs to these operators.
 Token.Symbols = { UnaryMinus: '\u{2212}' };
 
-// Token.Operator defines the precedence and associativity of all valid operators
+// Token.Operator defines the precedence and associativity of
+// all valid operators
 Token.Operator = {
   '\u2212': { prec: -3, assoc: RIGHT }, // unary minus
   '~': { prec: -3, assoc: RIGHT },
@@ -110,8 +128,10 @@ Token.Operator = {
   ',': { prec: -17, assoc: LEFT },
 };
 
-// Depending on whether BigInt or JSBI.BigInt is supported there are predefined functions you can use within Arbitrary Precision Calculator.
-// The actual implementations are defined in the respective numbercruncher-*.js files
+// Depending on whether BigInt or JSBI.BigInt is supported there are
+// predefined functions you can use within Arbitrary Precision Calculator.
+// The actual implementations are defined in the respective
+// numbercruncher-*.js files.
 Token.Functions = {
   max: null,
   min: null,
@@ -121,12 +141,14 @@ Token.Functions = {
   sqrt: null,
 };
 
-// All functions defined in Token.Functions have the highest precedence of -1 and are right-associative.
+// All functions defined in Token.Functions have the highest precedence
+// of -1 and are right-associative.
 Object.keys(Token.Functions).forEach(f => {
   Token.Operator[f] = { prec: -1, assoc: RIGHT };
 });
 
-// To discover the type of each token found in the expression, regex's are used
+// To discover the type of each token found in the expression
+// regex's are used
 Token.Types = [
   { regex: new RegExp(`^(${Object.keys(Token.Functions).join('|')})`), type: Token.Type.Function, name: 'function' },
   { regex: new RegExp(`^(${Token.Operators.map(o => o.replace(/[\|\-\/\*\+\^\$]/g, '\\$&')).join('|')})`), type: Token.Type.Operator, name: 'operator' },
@@ -191,7 +213,8 @@ let tokenize = expr => {
   return { tokens: tokens };
 }
 
-// The Shunting-Yard algorithm takes a list of tokens and rearranges them into an array with the tokens in Reverse Polish Notation
+// The Shunting-Yard algorithm takes a list of tokens and rearranges them
+// into an array with the tokens in Reverse Polish Notation.
 let shuntingYard = tokens => {
   let ops = new Stack();
   let queue = new Stack();
