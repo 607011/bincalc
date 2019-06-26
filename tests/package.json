@@ -22,9 +22,8 @@
   "bugs": {
     "url": "https://github.com/ola-ct/bincalc/issues"
   },
-  "homepage": "https://github.com/ola-ct/bincalc#readme",
+  "homepage": "https://github.com/ola-ct/bincalc",
   "devDependencies": {
-    "chai": "^4.2.0",
     "mocha": "^6.1.4"
   }
 }
