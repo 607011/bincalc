@@ -130,8 +130,8 @@ Token.Operator = {
 
 // Depending on whether BigInt or JSBI.BigInt is supported there are
 // predefined functions you can use within Arbitrary Precision Calculator.
-// The actual implementations are defined in the respective
-// numbercruncher-*.js files.
+// You cand find the actual implementations in the respective
+// numbercruncher-*.js file.
 Token.Functions = {
   max: null,
   min: null,
@@ -148,7 +148,7 @@ Object.keys(Token.Functions).forEach(f => {
 });
 
 // To discover the type of each token found in the expression
-// regex's are used
+// regex's are used.
 Token.Types = [
   { regex: new RegExp(`^(${Object.keys(Token.Functions).join('|')})`), type: Token.Type.Function, name: 'function' },
   { regex: new RegExp(`^(${Token.Operators.map(o => o.replace(/[\|\-\/\*\+\^\$]/g, '\\$&')).join('|')})`), type: Token.Type.Operator, name: 'operator' },
