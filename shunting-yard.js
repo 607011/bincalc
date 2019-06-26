@@ -156,7 +156,7 @@ Token.Types = [
   { regex: /^o([0-7]+)/, type: Token.Type.Literal, base: 8, name: 'octal' },
   { regex: /^([0-9]+)/, type: Token.Type.Literal, base: 10, name: 'decimal' },
   { regex: /^x([0-9a-fA-F]+)/, type: Token.Type.Literal, base: 16, name: 'hexadecimal' },
-  { regex: /^([a-zA-Z_]+)/, type: Token.Type.Variable, name: 'variable' },
+  { regex: /^([a-zA-Z_][a-zA-Z0-9_]*)/, type: Token.Type.Variable, name: 'variable' },
   { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
   { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
 ];
