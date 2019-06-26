@@ -1,5 +1,19 @@
-const assert = require('assert')
+// Copyright (c) 2019 Oliver Lau <ola@ct.de>, Heise Medien GmbH & Co. KG
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or (at
+// your option) any later version.
+//
+// This program is distributed in the hope that it will be useful, but
+// WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see http://www.gnu.org/licenses/.
 
+const assert = require('assert')
 const fs = require('fs')
 const vm = require('vm')
 
@@ -14,9 +28,9 @@ it('testing Stack', () => {
   assert.ok(stack.length === 0)
 })
 
-it('testing shunting-yard', () => {
+it('testing tokenizer', () => {
   const tokenized = tokenize('(1+2)*3**4-5')
-  const expected = [
+  const expectedTokens = [
     new Token(5, '('),
     new Token(1, 1n),
     new Token(2, '+'),
@@ -29,11 +43,11 @@ it('testing shunting-yard', () => {
     new Token(2, '-'),
     new Token(1, 5n)
   ]
-  assert.ok(
-    tokenized.tokens.every((element, idx) => {
-      return element.equals(expected[idx])
-    })
-  )
+  assert.ok(tokenized.tokens.every((element, idx) => element.equals(expectedTokens[idx])))
+})
+
+it('testing shunting-yard', () => {
+  const tokenized = tokenize('(1+2)*3**4-5')
   const expectedRPN = [
     new Token(1, 1n),
     new Token(1, 2n),
@@ -45,9 +59,5 @@ it('testing shunting-yard', () => {
     new Token(1, 5n),
     new Token(2, '-')
   ]
-  assert.ok(
-    shuntingYard(tokenized.tokens).stack.every((element, idx) => {
-      return element.equals(expectedRPN[idx])
-    })
-  )
+  assert.ok(shuntingYard(tokenized.tokens).stack.every((element, idx) => element.equals(expectedRPN[idx])))
 })
