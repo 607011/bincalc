@@ -17,7 +17,7 @@
   let isCalculating = false;
   let workerFile = 'numbercruncher-bigint.js';
 
-  let formulaChanged = () => {
+  const formulaChanged = () => {
     if (isCalculating) {
       numberCruncher.terminate();
       initWorker();
@@ -36,13 +36,13 @@
     fitOutputPane();
   };
 
-  let baseChanged = event => {
+  const baseChanged = event => {
     base = parseInt(event.target.value);
     localStorage.setItem('base', base);
     formulaChanged();
   };
 
-  let msToStr = ms => {
+  const msToStr = ms => {
     if (ms < 1) {
       return `&lt;1ms`;
     }
@@ -52,7 +52,7 @@
     return `${(1e-3 * ms).toFixed(1)}s`;
   };
 
-  let visualResultFrom = result => {
+  const visualResultFrom = result => {
     const containerEl = document.createElement('div');
     containerEl.classList.add('result-container');
     const exprEl = document.createElement('span');
@@ -66,7 +66,7 @@
     return containerEl;
   };
 
-  let numberCruncherReady = msg => {
+  const numberCruncherReady = msg => {
     isCalculating = false;
     if (msg.data.error) {
       msgEl.innerHTML = msg.data.error;
@@ -92,18 +92,18 @@
     }
   };
 
-  let overlayKeyDown = event => {
+  const overlayKeyDown = event => {
     if (event.key === 'Escape') {
       overlayEl.classList.add('hidden');
     }
   };
 
-  let initWorker = () => {
+  const initWorker = () => {
     numberCruncher = new Worker(workerFile);
     numberCruncher.onmessage = numberCruncherReady;
   };
 
-  let terminateWorker = () => {
+  const terminateWorker = () => {
     if (isCalculating) {
       isCalculating = false;
       numberCruncher.terminate();
@@ -112,7 +112,7 @@
     }
   };
 
-  let toggleHelp = () => {
+  const toggleHelp = () => {
     if (overlayEl.classList.contains('hidden')) {
       overlayEl.classList.remove('hidden');
       document.getElementById('help-back').addEventListener('click', () => {
@@ -126,7 +126,7 @@
     }
   };
 
-  let onKeyUp = event => {
+  const onKeyUp = event => {
     switch (event.key) {
       case 'F1':
         toggleHelp();
@@ -137,7 +137,7 @@
     }
   };
 
-  let onKeyDown = event => {
+  const onKeyDown = event => {
     switch (event.key) {
       case 'v':
         if (typeof navigator.clipboard.readText === 'function' && (event.metaKey || event.ctrlKey)) {
@@ -155,7 +155,7 @@
     return false;
   };
 
-  let fitOutputPane = () => {
+  const fitOutputPane = () => {
     const h = document.getElementById('header').offsetHeight
       + document.getElementById('msg-container').offsetHeight
       + document.getElementById('input-pane').offsetHeight
@@ -165,13 +165,13 @@
     outputPaneEl.style.height = `${window.innerHeight - h}px`;
   };
 
-  let onResize = () => {
+  const onResize = () => {
     fitOutputPane();
   };
 
-  let init = () => {
+  const init = () => {
     try {
-      let x = BigInt(0);
+      const x = BigInt(0);
     }
     catch (e) {
       workerFile = 'numbercruncher-jsbi.js';
@@ -203,10 +203,10 @@
     fitOutputPane();
     if (typeof navigator.clipboard.readText === 'undefined') {
       inputPaneEl.addEventListener('paste', event => {
-        let clipboardData = event.clipboardData || window.clipboardData;
-        let pastedData = clipboardData.getData('Text');
-        let parser = new DOMParser().parseFromString(pastedData, 'text/html');
-        let clipboardText = parser.body.textContent || '';
+        const clipboardData = event.clipboardData || window.clipboardData;
+        const pastedData = clipboardData.getData('Text');
+        const parser = new DOMParser().parseFromString(pastedData, 'text/html');
+        const clipboardText = parser.body.textContent || '';
         document.execCommand('insertText', false, clipboardText);
         event.preventDefault();
         event.stopPropagation();

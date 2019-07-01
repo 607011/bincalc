@@ -97,7 +97,7 @@ class Calculator {
   }
 
   calculate(expr) {
-    let { tokens, error } = tokenize(expr);
+    const { tokens, error } = tokenize(expr);
     if (error) {
       return { error };
     }
@@ -170,10 +170,10 @@ class Calculator {
             if (bToken.type === Token.Type.Variable && !this._variables.hasOwnProperty(bToken.value)) {
               return { error: `undefined variable '${bToken.value}'` };
             }
-            let a = (aToken.type === Token.Type.Literal)
+            const a = (aToken.type === Token.Type.Literal)
               ? aToken.value
               : this._variables[aToken.value];
-            let b = (bToken.type === Token.Type.Literal)
+            const b = (bToken.type === Token.Type.Literal)
               ? bToken.value
               : this._variables[bToken.value];
             let r;

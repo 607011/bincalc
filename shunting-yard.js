@@ -66,8 +66,8 @@ class Token {
   get value() { return this._value; }
   set type(t) { this._type = t; }
   set value(v) { this._value = v; }
-  get precedence() { return Token.Operator[this.value].prec; }
-  get associativity() { return Token.Operator[this.value].assoc; }
+  get precedence() { return Token.OperatorPrecAssoc[this.value].prec; }
+  get associativity() { return Token.OperatorPrecAssoc[this.value].assoc; }
   equals(other) {
     return this._type === other.type
       && this._value === other.value;
@@ -83,20 +83,24 @@ Token.Type = (types => {
   }
   return obj;
 })(['Literal', 'Operator', 'Function', 'Variable', 'LeftParenthesis', 'RightParenthesis']);
+Object.freeze(Token.Type);
 
 Token.BasePrefix = { 2: '0b', 8: '0o', 10: '', 16: '0x' };
+Object.freeze(Token.BasePrefix);
 
 // Token.Operators contains the list of valid operators.
 Token.Operators = ['~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=', '^', '&', '|', '+', '-', '**', '*', '/', '%', '<<', '>>', '==', '!=', '<=', '>=', '>', '<', '=', ','];
+Object.freeze(Token.Operators);
 
 // There are special operators which are not recognized by the
 // tokenizer but later on must represent a symbol with a new meaning.
 // Currently, only the unary minus belongs to these operators.
 Token.Symbols = { UnaryMinus: '\u{2212}' };
+Object.freeze(Token.Symbols);
 
 // Token.Operator defines the precedence and associativity of
 // all valid operators
-Token.Operator = {
+Token.OperatorPrecAssoc = {
   '\u2212': { prec: -3, assoc: RIGHT }, // unary minus
   '~': { prec: -3, assoc: RIGHT },
   '**': { prec: -4, assoc: RIGHT },
@@ -128,6 +132,7 @@ Token.Operator = {
   ',': { prec: -17, assoc: LEFT },
 };
 
+
 // Depending on whether BigInt or JSBI.BigInt is supported there are
 // predefined functions you can use within Arbitrary Precision Calculator.
 // You cand find the actual implementations in the respective
@@ -144,8 +149,11 @@ Token.Functions = {
 // All functions defined in Token.Functions have the highest precedence
 // of -1 and are right-associative.
 Object.keys(Token.Functions).forEach(f => {
-  Token.Operator[f] = { prec: -1, assoc: RIGHT };
+  Token.OperatorPrecAssoc[f] = { prec: -1, assoc: RIGHT };
 });
+
+Object.freeze(Token.OperatorPrecAssoc);
+
 
 // To discover the type of each token found in the expression
 // regex's are used.
@@ -160,18 +168,19 @@ Token.Types = [
   { regex: /^(\()/, type: Token.Type.LeftParenthesis, name: 'left parenthesis' },
   { regex: /^(\))/, type: Token.Type.RightParenthesis, name: 'right parenthesis' },
 ];
+Object.freeze(Token.Types);
 
 // tokenize() parses the expression into tokens of type Token.
-let tokenize = expr => {
+const tokenize = expr => {
   let tokens = [];
   while (expr.length > 0) {
     let found = false;
     for (let i = 0; i < Token.Types.length && !found; ++i) {
-      let t = Token.Types[i];
-      let m = expr.match(t.regex);
+      const t = Token.Types[i];
+      const m = expr.match(t.regex);
       if (m && m.length > 0) {
+        const len = m[0].length;
         let symbol = m[1];
-        let len = m[0].length;
         let value;
         switch (t.type) {
           case Token.Type.Literal:
@@ -216,8 +225,8 @@ let tokenize = expr => {
 // The Shunting-Yard algorithm takes a list of tokens and rearranges them
 // into an array with the tokens in Reverse Polish Notation.
 let shuntingYard = tokens => {
-  let ops = new Stack();
-  let queue = new Stack();
+  const ops = new Stack();
+  const queue = new Stack();
   for (const token of tokens) {
     switch (token.type) {
       case Token.Type.Literal:
