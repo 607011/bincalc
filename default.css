@@ -54,6 +54,14 @@ input[type="radio"] + label {
 #help-button {
   cursor: pointer;
   margin: 4px 4px 0 0;
+  transition-property: transform;
+  transition-duration: 0.1s;
+  transition-timing-function: ease;
+  transition-delay: 0s;
+}
+
+#help-button:hover {
+  transform: scale(1.15);
 }
 
 .error {
