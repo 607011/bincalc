@@ -28,6 +28,20 @@ Token.Functions = {
     f: (...[a, b]) => JSBI.lessThan(a, b) ? a : b,
     n: 2
   },
+  popcnt: {
+    f: (...[a]) => {
+      let popcnt = JSBI.__zero();
+      const One = JSBI.BigInt(1);
+      while (a > JSBI.__zero()) {
+        if ((a & One) === One) {
+          ++popcnt;
+        }
+        a = JSBI.signedRightShift(a, One);
+      }
+      return popcnt;
+    },
+    n: 1
+  },
   gcd: {
     f: (...[a, b]) => {
       if (JSBI.equal(a, JSBI.__zero()) || JSBI.equal(b, JSBI.__zero())) {

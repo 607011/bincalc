@@ -144,6 +144,7 @@ Token.Functions = {
   lcm: null,
   sign: null,
   sqrt: null,
+  popcnt: null,
 };
 
 // All functions defined in Token.Functions have the highest precedence

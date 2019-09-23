@@ -28,6 +28,19 @@ Token.Functions = {
     f: (...[a, b]) => a < b ? a : b,
     n: 2
   },
+  popcnt: {
+    f: (...[a]) => {
+      let popcnt = 0n;
+      while (a > 0n) {
+        if ((a & 1n) === 1n) {
+          ++popcnt;
+        }
+        a >>= 1n;
+      }
+      return popcnt;
+    },
+    n: 1
+  },
   gcd: {
     f: (...[a, b]) => {
       if (a === 0n || b === 0n) {
@@ -82,7 +95,6 @@ Token.Functions = {
     n: 1
   },
 };
-
 
 class Calculator {
   constructor() {
