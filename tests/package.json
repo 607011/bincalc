@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ola-ct/bincalc.git"
+    "url": "git+https://github.com/607011/bincalc.git"
   },
   "keywords": [
     "javascript",
@@ -20,9 +20,9 @@
   "author": "Oliver Lau",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/ola-ct/bincalc/issues"
+    "url": "https://github.com/607011/bincalc/issues"
   },
-  "homepage": "https://github.com/ola-ct/bincalc",
+  "homepage": "https://github.com/607011/bincalc",
   "devDependencies": {
     "mocha": "^6.1.4"
   }
