@@ -363,9 +363,7 @@ class Calculator {
         if (tokens.length === 0) {
             return { error: 'invalid expression' };
         }
-        console.log(tokens, 2);
         const rpnTokens = ShuntingYard.shunt(tokens);
-        console.log(rpnTokens, 2);
         const s = new Queue();
         for (const t of rpnTokens) {
             if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
