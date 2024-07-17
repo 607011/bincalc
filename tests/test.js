@@ -17,7 +17,7 @@ const assert = require('assert')
 const fs = require('fs')
 const vm = require('vm')
 
-vm.runInThisContext(fs.readFileSync('../shunting-yard.js'))
+vm.runInThisContext(fs.readFileSync('../numbercruncher.js'))
 
 it('testing Stack', () => {
   let stack = new Stack()
@@ -29,35 +29,36 @@ it('testing Stack', () => {
 })
 
 it('testing tokenizer', () => {
-  const tokenized = tokenize('(1+2)*3**4-5')
+  const tokenized = ShuntingYard.tokenize('(1+2)*3**4-5')
   const expectedTokens = [
-    new Token(5, '('),
-    new Token(1, 1n),
-    new Token(2, '+'),
-    new Token(1, 2n),
-    new Token(6, ')'),
-    new Token(2, '*'),
-    new Token(1, 3n),
-    new Token(2, '**'),
-    new Token(1, 4n),
-    new Token(2, '-'),
-    new Token(1, 5n)
+    new Token(Token.Type.LeftParenthesis, '('),
+    new Token(Token.Type.Literal, 1n),
+    new Token(Token.Type.Operator, '+'),
+    new Token(Token.Type.Literal, 2n),
+    new Token(Token.Type.RightParenthesis, ')'),
+    new Token(Token.Type.Operator, '*'),
+    new Token(Token.Type.Literal, 3n),
+    new Token(Token.Type.Operator, '**'),
+    new Token(Token.Type.Literal, 4n),
+    new Token(Token.Type.Operator, '-'),
+    new Token(Token.Type.Literal, 5n)
   ]
   assert.ok(tokenized.tokens.every((element, idx) => element.equals(expectedTokens[idx])))
 })
 
 it('testing shunting-yard', () => {
-  const tokenized = tokenize('(1+2)*3**4-5')
+  const tokenized = ShuntingYard.tokenize('(1+2)*3**4-5')
   const expectedRPN = [
-    new Token(1, 1n),
-    new Token(1, 2n),
-    new Token(2, '+'),
-    new Token(1, 3n),
-    new Token(1, 4n),
-    new Token(2, '**'),
-    new Token(2, '*'),
-    new Token(1, 5n),
-    new Token(2, '-')
+    new Token(Token.Type.Literal, 1n),
+    new Token(Token.Type.Literal, 2n),
+    new Token(Token.Type.Operator, '+'),
+    new Token(Token.Type.Literal, 3n),
+    new Token(Token.Type.Literal, 4n),
+    new Token(Token.Type.Operator, '**'),
+    new Token(Token.Type.Operator, '*'),
+    new Token(Token.Type.Literal, 5n),
+    new Token(Token.Type.Operator, '-')
   ]
-  assert.ok(shuntingYard(tokenized.tokens).stack.every((element, idx) => element.equals(expectedRPN[idx])))
+  const rpnTokens = ShuntingYard.shunt(tokenized.tokens);
+  assert.ok(rpnTokens.values().every((element, idx) => element.equals(expectedRPN[idx])))
 })

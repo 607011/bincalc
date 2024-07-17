@@ -24,6 +24,6 @@
   },
   "homepage": "https://github.com/607011/bincalc",
   "devDependencies": {
-    "mocha": "^6.1.4"
+    "mocha": "^6.2.3"
   }
 }

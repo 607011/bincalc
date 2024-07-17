@@ -1,210 +1,253 @@
 * {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+@font-face {
+    font-family: 'Viktor Mono';
+    src: url(static/fonts/WOFF2/VictorMono-Regular.woff2);
+}
+
+@font-face {
+    font-family: 'Viktor Mono';
+    font-weight: bold;
+    src: url(static/fonts/WOFF2/VictorMono-Bold.woff2);
+}
+
+@font-face {
+    font-family: 'Viktor Mono';
+    font-weight: bolder;
+    src: url(static/fonts/WOFF2/VictorMono-Medium.woff2);
+}
+
+@font-face {
+    font-family: 'Viktor Mono';
+    font-style: italic;
+    src: url(static/fonts/WOFF2/VictorMono-Italic.woff2);
+}
+
+@font-face {
+    font-family: 'Viktor Mono';
+    font-weight: bold;
+    font-style: italic;
+    src: url(static/fonts/WOFF2/VictorMono-BoldItalic.woff2);
 }
 
 html,
 body {
-  background-color: #e9e7de;
-  color: #222;
-  font-family: 'Saira Semi Condensed', sans-serif;
-  font-size: 12pt;
+    background-color: #e9e7de;
+    color: #222;
+    font-family: 'Viktor Mono', monospace;
+    font-size: 12pt;
 }
 
 h1 {
-  font-size: 18pt;
+    font-size: 18pt;
 }
 
 a {
-  color: #555;
-  font-weight: bold;
-  text-decoration: none;
+    color: #555;
+    font-style: italic;
+    text-decoration: none;
 }
 
 a:visited {
-  color: #666;
+    color: #666;
 }
 
 a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
 #overlay {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.5);
-  z-index: 2;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 2;
 }
 
 input[type="radio"] {
-  margin-right: 0.2em;
-  cursor: pointer;
+    margin-right: 0.2em;
+    cursor: pointer;
 }
 
-input[type="radio"] + label {
-  margin-right: 1em;
-  cursor: pointer;
+input[type="radio"]+label {
+    margin-right: 1em;
+    cursor: pointer;
 }
 
 #help-button {
-  cursor: pointer;
-  margin: 4px 4px 0 0;
-  transition-property: transform;
-  transition-duration: 0.1s;
-  transition-timing-function: ease;
-  transition-delay: 0s;
+    cursor: pointer;
+    margin: 4px 4px 0 0;
+    transition-property: transform;
+    transition-duration: 0.1s;
+    transition-timing-function: ease;
+    transition-delay: 0s;
 }
 
 #help-button:hover {
-  transform: scale(1.15);
+    transform: scale(1.15);
 }
 
 .error {
-  background-color: rgb(223, 53, 53) !important;
-  font-weight: bold;
+    background-color: rgb(223, 53, 53) !important;
+    font-weight: bold;
 }
 
 .hidden {
-  display: none !important;
+    display: none !important;
 }
 
 .show {
-  display: block;
+    display: block;
 }
 
 #loader-icon {
-  display: inline-block;
-  width: 17px;
-  height: 17px;
-  margin-right: 8px;
-  vertical-align: middle;
+    display: inline-block;
+    width: 17px;
+    height: 17px;
+    margin-right: 8px;
+    vertical-align: middle;
 }
 
 .greyout {
-  opacity: 0.5;
-  background-color: rgba(0, 0, 0, 0.8) !important;
+    opacity: 0.5;
+    background-color: rgba(0, 0, 0, 0.8) !important;
 }
 
 table {
-  margin: 12pt 12pt 8pt 0;
+    margin: 12pt 12pt 8pt 0;
 }
 
-table, td, th {
-  border-collapse: collapse;
+table,
+td,
+th {
+    border-collapse: collapse;
 }
 
-table > caption {
-  font-size: 12pt;
-  font-weight: bold;
-  text-align: left;
-  border: 1px solid #333;
-  color: #eee;
-  background-color: #333;
-  padding-left: 0.2em;
+table>caption {
+    font-size: 12pt;
+    font-weight: bold;
+    text-align: left;
+    border: 1px solid #333;
+    color: #eee;
+    background-color: #333;
+    padding-left: 0.2em;
 }
 
-td, th {
-  border: 1px solid #333;
-  padding: 0.2ex 0.4em 0.2ex 0.2em;
+td,
+th {
+    border: 1px solid #333;
+    padding: 0.2ex 0.4em 0.2ex 0.2em;
 }
 
 th {
-  text-align: left;
+    text-align: left;
 }
 
 tfoot td {
-  font-size: smaller;
+    font-size: smaller;
 }
 
 .app {
-  position: relative;
-  display: flex;
-  flex-flow: row wrap;
-  align-items: stretch;
-  height: 100%;
+    position: relative;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: stretch;
+    height: 100%;
 }
 
-.app > * {
-  padding: 4px;
-  flex-grow: 1;
-  flex-basis: 100%;
+.app>* {
+    padding: 4px;
+    flex-grow: 1;
+    flex-basis: 100%;
 }
 
-.header, .footer {
-  background-color: #333;
-  color: #eee;
-  vertical-align: middle;
+.header,
+.footer {
+    padding: 4px 8px;
+    background-color: #333;
+    color: #eee;
+    vertical-align: middle;
+    font-weight: bold;
+    font-size: smaller;
 }
 
 .header {
-  font-size: 15pt;
-  font-weight: bold;
+    font-size: 15pt;
+    font-weight: bold;
 }
 
 .footer a {
-  color: #ddd;
+    color: #ddd;
 }
 
 .footer a:visited {
-  color: #ccc;
+    color: #ccc;
 }
 
 .msg-container {
-  background-color:rgb(238, 143, 0);
-  color: white;
-  height: 3ex;
-  vertical-align: middle;
+    background-color: rgb(238, 143, 0);
+    color: white;
+    height: 4ex;
+    vertical-align: middle;
+    font-size: smaller;
+    font-weight: bolder;
+    padding: 3px 8px;
 }
 
 #msg {
-  vertical-align: middle;
+    vertical-align: middle;
 }
 
-#output-pane, #input-pane {
-  background-color: white;
-  color: black;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 12pt;
-  margin: 4pt;
-  border: 1px solid #444;
+#output-pane,
+#input-pane {
+    background-color: white;
+    color: black;
+    font-family: 'Viktor Mono', monospace;
+    font-size: 12pt;
+    margin: 4pt;
+    border: 1px solid #444;
 }
 
 #input-pane {
-  min-height: 4ex;
-  word-break: break-all;
-  overflow-y: auto;
-  width: auto;
+    min-height: 4ex;
+    word-break: break-all;
+    overflow-y: auto;
+    width: auto;
 }
 
-#input-pane:empty:not(:focus):before, #output-pane:empty:not(:focus):before {
-  content: attr(data-text);
-  color: #999;
+#input-pane:empty:not(:focus):before,
+#output-pane:empty:not(:focus):before {
+    content: attr(data-text);
+    color: #999;
 }
 
 #output-pane {
-  word-break: break-all;
-  overflow-y: scroll;
-  width: auto;
-  height: 24px;
+    word-break: break-all;
+    overflow-y: scroll;
+    width: auto;
+    height: 24px;
 }
 
 .result-container {
-  margin-bottom: 4pt;
+    margin-bottom: 4pt;
 }
 
 .expression {
-  padding: 0 0.2em;
-  background-color:rgb(238, 143, 0);
-  color: white;
-  display: inline-block;
+    padding: 0 0.2em;
+    background-color: rgb(238, 143, 0);
+    color: white;
+    display: inline-block;
 }
 
 .result {
-  padding: 0 0.2em;
-  display: inline;
+    padding: 0 0.2em;
+    display: inline;
 }
