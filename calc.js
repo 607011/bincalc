@@ -17,8 +17,6 @@
 (function (window) {
     'use strict';
 
-    const workerFile = 'numbercruncher.js';
-
     let inputPaneEl = null;
     let msgEl = null;
     let msgContainerEl = null;
@@ -83,6 +81,10 @@
 
     const numberCruncherReady = msg => {
         isCalculating = false;
+        console.debug(msg)
+        if (msg.data.log) {
+            console.debug(msg.data.log);
+        }
         if (msg.data.error) {
             msgEl.innerHTML = msg.data.error;
             msgContainerEl.classList.add('error');
@@ -114,7 +116,7 @@
     };
 
     const initWorker = () => {
-        numberCruncher = new Worker(workerFile);
+        numberCruncher = new Worker('worker-message-handler.js');
         numberCruncher.onmessage = numberCruncherReady;
     };
 
@@ -185,6 +187,7 @@
     };
 
     const init = () => {
+        console.info('Arbitrary Precision Calculator.');
         try {
             const x = BigInt(0);
         }

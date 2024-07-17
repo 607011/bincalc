@@ -13,8 +13,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see http://www.gnu.org/licenses/.
 
-if (typeof window === 'object')
-    import('./worker-message-handler.js');
 
 // Set or get the last element in an array.
 Object.defineProperty(Array.prototype, 'last', {
@@ -365,9 +363,9 @@ class Calculator {
         if (tokens.length === 0) {
             return { error: 'invalid expression' };
         }
-        console.log(JSON.stringify(tokens, 2));
+        console.log(tokens, 2);
         const rpnTokens = ShuntingYard.shunt(tokens);
-        console.log(JSON.stringify(rpnTokens, 2));
+        console.log(rpnTokens, 2);
         const s = new Queue();
         for (const t of rpnTokens) {
             if (t.type === Token.Type.Literal || t.type === Token.Type.Variable) {
