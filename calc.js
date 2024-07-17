@@ -81,7 +81,6 @@
 
     const numberCruncherReady = msg => {
         isCalculating = false;
-        console.debug(msg)
         if (msg.data.log) {
             console.debug(msg.data.log);
         }

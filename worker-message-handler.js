@@ -26,7 +26,6 @@ self.onmessage = function(event) {
     let results = [];
     const calculator = new Calculator();
     for (const expression of expressions) {
-        postMessage({ log: expression });
         const calcT0 = Date.now();
         const expr = expression.replace(/\s+/g, '');
         const { result, error } = calculator.calculate(expr);
