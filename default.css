@@ -6,32 +6,37 @@
 
 @font-face {
     font-family: 'Viktor Mono';
-    src: url(static/fonts/WOFF2/VictorMono-Regular.woff2);
+    font-display: swap;
+    src: url(static/fonts/VictorMono-Regular.woff2) format("woff2");
 }
 
 @font-face {
     font-family: 'Viktor Mono';
+    font-display: swap;
     font-weight: bold;
-    src: url(static/fonts/WOFF2/VictorMono-Bold.woff2);
+    src: url(static/fonts/VictorMono-Bold.woff2) format("woff2");
 }
 
 @font-face {
     font-family: 'Viktor Mono';
+    font-display: swap;
     font-weight: bolder;
-    src: url(static/fonts/WOFF2/VictorMono-Medium.woff2);
+    src: url(static/fonts/VictorMono-Medium.woff2) format("woff2");
 }
 
 @font-face {
     font-family: 'Viktor Mono';
+    font-display: swap;
     font-style: italic;
-    src: url(static/fonts/WOFF2/VictorMono-Italic.woff2);
+    src: url(static/fonts/VictorMono-Italic.woff2) format("woff2");
 }
 
 @font-face {
     font-family: 'Viktor Mono';
+    font-display: swap;
     font-weight: bold;
     font-style: italic;
-    src: url(static/fonts/WOFF2/VictorMono-BoldItalic.woff2);
+    src: url(static/fonts/VictorMono-BoldItalic.woff2) format("woff2");
 }
 
 html,
@@ -83,16 +88,9 @@ input[type="radio"]+label {
 }
 
 #help-button {
+    text-align: right;
     cursor: pointer;
     margin: 4px 4px 0 0;
-    transition-property: transform;
-    transition-duration: 0.1s;
-    transition-timing-function: ease;
-    transition-delay: 0s;
-}
-
-#help-button:hover {
-    transform: scale(1.15);
 }
 
 .error {
@@ -155,7 +153,7 @@ tfoot td {
     font-size: smaller;
 }
 
-.app {
+#app {
     position: relative;
     display: flex;
     flex-flow: row wrap;
@@ -163,15 +161,19 @@ tfoot td {
     height: 100%;
 }
 
-.app>* {
+#app>* {
     padding: 4px;
     flex-grow: 1;
     flex-basis: 100%;
 }
 
-.header,
-.footer {
-    padding: 4px 8px;
+header,
+footer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    padding: 4px 8px !important;
     background-color: #333;
     color: #eee;
     vertical-align: middle;
@@ -179,16 +181,20 @@ tfoot td {
     font-size: smaller;
 }
 
-.header {
+header {
     font-size: 15pt;
     font-weight: bold;
 }
 
-.footer a {
+header > * {
+    flex-grow: 1;
+}
+
+footer a {
     color: #ddd;
 }
 
-.footer a:visited {
+footer a:visited {
     color: #ccc;
 }
 

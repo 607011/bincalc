@@ -172,12 +172,12 @@
     };
 
     const fitOutputPane = () => {
-        const h = document.getElementById('header').offsetHeight
-            + document.getElementById('msg-container').offsetHeight
-            + document.getElementById('input-pane').offsetHeight
-            + document.getElementById('base-selector').offsetHeight
-            + document.getElementById('footer').offsetHeight
-            + 8 * 4 - 1;
+        const h = document.querySelector('header').offsetHeight
+            + document.querySelector('#msg-container').offsetHeight
+            + document.querySelector('#input-pane').offsetHeight
+            + document.querySelector('#base-selector').offsetHeight
+            + document.querySelector('footer').offsetHeight
+            + 21;
         outputPaneEl.style.height = `${window.innerHeight - h}px`;
     };
 

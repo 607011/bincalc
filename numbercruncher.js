@@ -27,11 +27,11 @@ class Stack {
     }
     push(value) { this._stack.push(value); }
     pop() { return this._stack.pop(); }
-    get top() { return this._stack.last; }
     notEmpty() { return this._stack.length > 0; }
+    values() { return this._stack; }
+    get top() { return this._stack.last; }
     set top(v) { this._stack.last = v; }
     get length() { return this._stack.length; }
-    get stack() { return this._stack; }
 }
 
 class Queue {
@@ -41,8 +41,7 @@ class Queue {
     }
     push(value) { this._queue.push(value); }
     pop() { return this._queue.pop(); }
-    get length() { return this._queue.length; }
-    get top() { return this._queue.last; }
+    notEmpty() { return this._queue.length > 0; }
     values() { return this._queue; }
     [Symbol.iterator]() {
         return {
@@ -60,6 +59,20 @@ class Queue {
             }
         }
     }
+    get length() { return this._queue.length; }
+    get top() { return this._queue.last; }
+}
+
+function dumpArray(arr) {
+    return arr.map(token => token.value).join(' ');
+}
+
+function dumpQueue(queue) {
+    return dumpArray(queue.values());
+}
+
+function dumpStack(stack) {
+    return dumpArray(stack.values());
 }
 
 // Token represents an operator, variable or constant value.
@@ -85,7 +98,6 @@ class Token {
 Token.Type = Object.freeze({
     Literal: Symbol('Literal'),
     Operator: Symbol('Operator'),
-    Function: Symbol('Function'),
     Variable: Symbol('Variable'),
     LeftParenthesis: Symbol('LeftParenthesis'),
     RightParenthesis: Symbol('RightParenthesis'),
@@ -95,8 +107,12 @@ Token.BasePrefix = Object.freeze({ 2: '0b', 8: '0o', 10: '', 16: '0x' });
 
 // Token.Operators contains the list of valid operators.
 Token.Operators = Object.freeze([
-    '~=', '~', '&=', '^=', '/=', '%=', '+=', '-=', '<<=', '>>=',
-    '^', '&', '|', '+', '-',
+    '~=', '~', '&=', '^=',
+    '/=', '%=',
+    '+=', '-=',
+    '<<=', '>>=',
+    '^', '&', '|',
+    '+', '-',
     '**', '*', '/', '%',
     '<<', '>>',
     '==', '!=', '<=', '>=',
@@ -115,7 +131,7 @@ const ASSOC = Object.freeze({
 // Token.Operator defines the precedence and associativity of
 // all operators recognized by the calculator.
 Token.OperatorPrecAssoc = {
-    '\u2212': { prec: -3, assoc: ASSOC.RIGHT }, // unary minus
+    [Token.Symbols.UnaryMinus]: { prec: -3, assoc: ASSOC.RIGHT },
     '~': { prec: -3, assoc: ASSOC.RIGHT },
     '**': { prec: -4, assoc: ASSOC.RIGHT },
     '*': { prec: -5, assoc: ASSOC.LEFT },
@@ -196,7 +212,7 @@ const AvailableFunctions = {
     sqrt: {
         f: (...[a]) => {
             if (a < 0n) {
-                throw 'cannot calculate square root of negative numbers';
+                throw new RuntimeError('cannot calculate square root of negative numbers');
             }
             else if (a < 2n) {
                 return a;
@@ -288,7 +304,7 @@ class ShuntingYard {
                 }
             }
             if (!found) {
-                return { error: `invalid expression: ${expr}` };
+                return { error: new RuntimeError(`invalid expression: '${expr}'`) };
             }
         }
         return { tokens };
@@ -300,6 +316,7 @@ class ShuntingYard {
         const ops = new Stack();
         const queue = new Queue();
         for (const token of tokens) {
+            console.debug(`QUEUE: ${dumpQueue(queue)}\nSTACK: ${dumpStack(ops)}`);
             switch (token.type) {
                 case Token.Type.Literal:
                 // fall-through
@@ -313,12 +330,10 @@ class ShuntingYard {
                     while (ops.notEmpty() && ops.top.type !== Token.Type.LeftParenthesis) {
                         queue.push(ops.pop());
                     }
-                    if (ops.top.type === Token.Type.LeftParenthesis) {
+                    if (ops.notEmpty() && ops.top.type === Token.Type.LeftParenthesis) {
                         ops.pop();
                     }
                     break;
-                case Token.Type.Function:
-                // TODO
                 case Token.Type.Operator:
                     while (ops.notEmpty() &&
                         (ops.top.type !== Token.Type.LeftParenthesis)
@@ -341,11 +356,23 @@ class ShuntingYard {
         }
         while (ops.length > 0) {
             queue.push(ops.pop());
+            console.debug(`QUEUE: ${dumpQueue(queue)}\nSTACK: ${dumpStack(ops)}`);
         }
         return queue;
     }
 };
 
+class RuntimeError extends Error {
+    constructor(message) {
+        super(message);
+    }
+    toJSON() {
+        return this._message;
+    }
+    toString() {
+        return this._message;
+    }
+}
 
 class Calculator {
     constructor() {
@@ -361,7 +388,7 @@ class Calculator {
             return { error: error };
         }
         if (tokens.length === 0) {
-            return { error: 'invalid expression' };
+            return { result: undefined };
         }
         const rpnTokens = ShuntingYard.shunt(tokens);
         const s = new Queue();
@@ -387,11 +414,11 @@ class Calculator {
                                 args.unshift(value);
                             }
                             else {
-                                return { error: `undefined variable '${token.value}'` };
+                                return { error: new RuntimeError(`undefined variable '${token.value}' in '${expr}'`) };
                             }
                         }
                         else {
-                            return { error: 'illegal token' };
+                            return { error: new RuntimeError(`illegal token '${token}' in '${expr}'`) };
                         }
                     }
                     return args;
@@ -429,7 +456,7 @@ class Calculator {
                 const aToken = s.pop();
                 if (aToken instanceof Token && bToken instanceof Token) {
                     if (bToken.type === Token.Type.Variable && !this.variables.hasOwnProperty(bToken.value)) {
-                        return { error: `undefined variable '${bToken.value}'` };
+                        return { error: new RuntimeError(`undefined variable '${bToken.value}'`) };
                     }
                     const a = (aToken.type === Token.Type.Literal)
                         ? aToken.value

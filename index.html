@@ -30,9 +30,10 @@
 
 <body>
   <div id="overlay" class="hidden"></div>
-  <div class="app">
-    <div class="header" id="header">
-      <span style="float: right;" id="help-button" title="Help (F1)">
+  <div id="app">
+    <header>
+      <span>Arbitrary Precision Calculator</span>
+      <span id="help-button" title="Help (F1)">
         <svg width="24px" height="24px" viewBox="0 0 17 17" version="1.1" xmlns="http://www.w3.org/2000/svg"
           style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
           <circle cx="8.484" cy="8.515" r="8.477" style="fill:rgb(237,237,237);" />
@@ -45,9 +46,9 @@
           </g>
         </svg>
       </span>
-      Arbitrary Precision Calculator
+    </header>
+    <div id="input-pane" contenteditable="true" data-text="Enter your arithmetic expressions here, one per line">
     </div>
-    <div id="input-pane" contenteditable="true" data-text="Enter your arithmetic expressions here, one per line"></div>
     <div id="base-selector">
       <form id="base-form">
         <strong>Output:</strong>
@@ -82,11 +83,12 @@
       </span>
       <span id="msg"></span>
     </div>
-    <div class="footer" id="footer">
-      <a href="https://github.com/607011/bincalc" target="_blank">v1.0.4</a>
-      &ndash;
-      Copyright &copy; 2019&ndash;2024 <a href="mailto:ola@ct.de">Oliver Lau</a>
-    </div>
+    <footer>
+      <span><a href="https://github.com/607011/bincalc" target="_blank">v1.0.5</a>
+        &ndash;
+        Copyright &copy; 2019&ndash;2024 <a href="mailto:ola@ct.de">Oliver Lau</a>
+      </span>
+    </footer>
   </div>
 </body>
 
